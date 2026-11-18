@@ -1,1474 +1,1284 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>중1 국어 문법 탐험대 - 픽셀 보드게임</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-10-21@1.0/DungGeunMo.css">
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-<style>
-*{font-family:'DungGeunMo',monospace;user-select:none}
-body{background-color:#fff5f7;background-image:radial-gradient(#fbcfe8 20%,transparent 20%),radial-gradient(#e9d5ff 20%,transparent 20%);background-size:24px 24px;background-position:0 0,12px 12px}
-.pixel-box{border:4px solid #475569;box-shadow:4px 4px 0 #cbd5e1}
-.pixel-box-sm{border:3px solid #475569;box-shadow:2px 2px 0 #cbd5e1}
-.pixel-btn{border:3px solid #334155;box-shadow:0 4px 0 #334155;transition:all .1s;position:relative;top:0;color:#1e293b}
-.pixel-btn:active{top:4px;box-shadow:0 0 0 #334155}
-.pixel-board-tile{position:relative;border:3px solid #64748b;box-shadow:inset -2px -2px 0 #0000000d,inset 2px 2px 0 #ffffffb3;min-height:86px}
-.animate-dice{animation:dice-shake .4s infinite}
-@keyframes dice-shake{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(15deg) scale(1.1)}50%{transform:rotate(-15deg) scale(1.1)}75%{transform:rotate(10deg) scale(1.1)}}
-@keyframes pop-in{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
-@keyframes pulse-red{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-.modal-card{animation:pop-in .2s ease-out}
-.timer-pulse{animation:pulse-red .5s infinite}
-@media(max-width:640px){.pixel-board-tile{min-height:68px}.pixel-board-tile .tile-label{font-size:10px}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전문어 퀘스트 - 중1 국어 수업</title>
+    <!-- Tailwind CSS 로드 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 레트로 픽셀 한글 폰트 (DungGeunMo) 및 영문 픽셀 폰트 로드 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/DungGeunMo.css">
+    <style>
+        /* 픽셀 게임 스타일 커스텀 CSS */
+        :root {
+            --bg-color: #e0f2fe;
+            --card-bg: #ffffff;
+            --border-color: #1e293b;
+            --primary: #3b82f6;
+            --primary-shadow: #1d4ed8;
+            --secondary: #10b981;
+            --secondary-shadow: #047857;
+            --accent: #f59e0b;
+            --accent-shadow: #b45309;
+            --danger: #ef4444;
+            --danger-shadow: #b91c1c;
+        }
+
+        body {
+            font-family: 'DungGeunMo', monospace;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(#bae6fd 2px, transparent 2px),
+                radial-gradient(#bae6fd 2px, #e0f2fe 2px);
+            background-size: 32px 32px;
+            background-position: 0 0, 16px 16px;
+            color: var(--border-color);
+            user-select: none;
+        }
+
+        /* 픽셀 테두리 및 그림자 효과 */
+        .pixel-box {
+            background-color: var(--card-bg);
+            border: 4px solid var(--border-color);
+            box-shadow: 6px 6px 0px var(--border-color);
+            position: relative;
+        }
+
+        .pixel-box-sm {
+            background-color: var(--card-bg);
+            border: 3px solid var(--border-color);
+            box-shadow: 4px 4px 0px var(--border-color);
+        }
+
+        /* 픽셀 버튼 효과 */
+        .pixel-btn {
+            border: 3px solid var(--border-color);
+            box-shadow: 0px 5px 0px var(--border-color);
+            transition: transform 0.05s, box-shadow 0.05s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .pixel-btn:hover:not(:disabled) {
+            filter: brightness(1.05);
+        }
+
+        .pixel-btn:active:not(:disabled) {
+            transform: translateY(4px);
+            box-shadow: 0px 1px 0px var(--border-color);
+        }
+
+        .pixel-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-blue { background-color: #60a5fa; color: #0f172a; }
+        .btn-green { background-color: #34d399; color: #0f172a; }
+        .btn-yellow { background-color: #fbbf24; color: #0f172a; }
+        .btn-red { background-color: #f87171; color: #0f172a; }
+        .btn-purple { background-color: #c084fc; color: #0f172a; }
+        .btn-white { background-color: #f8fafc; color: #0f172a; }
+
+        /* 픽셀 입력창 */
+        .pixel-input {
+            border: 3px solid var(--border-color);
+            background-color: #f8fafc;
+            box-shadow: inset 3px 3px 0px #cbd5e1;
+            outline: none;
+        }
+        .pixel-input:focus {
+            background-color: #ffffff;
+            border-color: #2563eb;
+        }
+
+        /* 이미지 컨테이너 (비율 유지 및 선명도) */
+        .pixel-img-frame {
+            border: 3px solid var(--border-color);
+            background-color: #f1f5f9;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 애니메이션 */
+        @keyframes bounce-slow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        .animate-pixel-bounce {
+            animation: bounce-slow 2s infinite ease-in-out;
+        }
+
+        /* 스크롤바 커스텀 */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #cbd5e1; border-left: 3px solid #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #64748b; border: 2px solid #1e293b; }
+    </style>
 </head>
-<body class="text-slate-800 min-h-screen flex flex-col">
-<header class="bg-pink-200/90 backdrop-blur border-b-4 border-pink-400 p-4 sticky top-0 z-30 shadow-sm">
- <div class="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-4">
-  <div class="flex items-center gap-3"><span class="text-3xl animate-bounce">🎀</span><div>
-   <h1 class="text-xl md:text-2xl font-bold text-pink-900 tracking-wider">중1 국어 문법 탐험대 <span id="cloud-sync-status" class="text-xs bg-amber-100 text-amber-900 px-2 py-1 rounded-full border border-amber-300">☁️ 로컬 저장 모드</span></h1>
-   <p class="text-xs text-pink-700">단어 · 형태소 · 어근과 접사 · 단어의 짜임 파스텔 보드게임</p>
-  </div></div>
-  <nav class="flex gap-2">
-   <button onclick="switchTab('game')" id="tab-game-btn" class="pixel-btn bg-amber-200 px-4 py-2 text-sm font-bold rounded-lg">🎮 보드게임 실행</button>
-   <button onclick="switchTab('creator')" id="tab-creator-btn" class="pixel-btn bg-emerald-200 px-4 py-2 text-sm font-bold rounded-lg">✍️ 퀴즈 출제/관리</button>
-  </nav>
- </div>
-</header>
+<body class="min-h-screen flex flex-col">
 
-<main class="max-w-6xl mx-auto w-full p-4 flex-grow">
-<section id="creator-tab" class="hidden space-y-6">
- <div class="pixel-box bg-purple-100 border-purple-300 p-6 rounded-xl">
-  <h2 class="text-lg font-bold text-purple-900 mb-2">📜 [학생 활동] 국어 문법 퀴즈 만들기</h2>
-  <p class="text-sm text-purple-800">교과서에서 배우거나 찾아본 단어와 문장을 바탕으로 형태소, 어근/접사, 단일어/복합어 퀴즈를 입력해 보세요. 등록한 문제는 보드게임에서 무작위로 출제됩니다.</p>
- </div>
- <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-  <div class="lg:col-span-5 pixel-box bg-white border-pink-300 p-5 rounded-xl space-y-4">
-   <h3 class="font-bold text-pink-700 border-b-2 border-pink-200 pb-2 flex justify-between">➕ 새 퀴즈 추가 <span id="quiz-count-badge" class="text-xs bg-pink-100 px-2 py-1 rounded">0개 저장됨</span></h3>
-   <form id="quiz-form" class="space-y-3 text-sm">
-    <label class="block text-xs font-bold">작성자 이름<input id="quiz-author" required maxlength="40" class="mt-1 w-full bg-pink-50 border-2 border-pink-200 rounded-lg p-2" placeholder="1학년 0반 000"></label>
-    <label class="block text-xs font-bold">문법 주제<select id="quiz-category" class="mt-1 w-full bg-pink-50 border-2 border-pink-200 rounded-lg p-2"><option>단어와 형태소</option><option>어근과 접사</option><option>단어의 종류</option><option>새말의 형성</option><option>기타</option></select></label>
-    <label class="block text-xs font-bold">문제 난이도<select id="quiz-difficulty" required class="mt-1 w-full bg-pink-50 border-2 border-pink-200 rounded-lg p-2"><option value="하">하 · 20초</option><option value="중" selected>중 · 30초</option><option value="상">상 · 40초</option></select></label>
-    <label class="block text-xs font-bold">문제 지문<textarea id="quiz-question" required rows="3" class="mt-1 w-full bg-pink-50 border-2 border-pink-200 rounded-lg p-2" placeholder="문제를 입력하세요."></textarea></label>
-    <div class="space-y-2"><label class="text-xs font-bold" for="quiz-option-count">선택지 유형</label><select id="quiz-option-count" onchange="updateQuizOptionInputs()" class="w-full border-2 border-pink-200 rounded-lg p-2 bg-white"><option value="4">4개 선택지 (객관식)</option><option value="2">2개 선택지 (OX 문제)</option></select>
-     <input id="opt-0" required placeholder="1번 보기" class="w-full border border-pink-200 rounded p-2 text-xs">
-     <input id="opt-1" required placeholder="2번 보기" class="w-full border border-pink-200 rounded p-2 text-xs">
-     <input id="opt-2" required placeholder="3번 보기" class="w-full border border-pink-200 rounded p-2 text-xs">
-     <input id="opt-3" required placeholder="4번 보기" class="w-full border border-pink-200 rounded p-2 text-xs">
+    <!-- 상단 내비게이션 바 -->
+    <header class="bg-amber-300 border-b-4 border-slate-900 sticky top-0 z-40 px-4 py-3 shadow-md">
+        <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
+            <!-- 로고 / 타이틀 -->
+            <div class="flex items-center gap-2 cursor-pointer" onclick="switchTab('wall')">
+                <span class="text-3xl animate-pixel-bounce">👾</span>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-wider text-slate-900">전문어 퀘스트!</h1>
+                    <p class="text-xs text-slate-700">우리 반 전문어 도감 & 퀴즈 배틀</p>
+                </div>
+            </div>
+
+            <!-- 메뉴 탭 버튼 -->
+            <nav class="flex flex-wrap gap-2">
+                <button onclick="switchTab('wall')" id="tab-wall" class="pixel-btn btn-yellow px-3 py-2 text-sm sm:text-base rounded-none">
+                    🧱 전문어 담벼락
+                </button>
+                <button onclick="switchTab('upload')" id="tab-upload" class="pixel-btn btn-green px-3 py-2 text-sm sm:text-base rounded-none">
+                    ➕ 전문어 등록
+                </button>
+                <button onclick="switchTab('quiz')" id="tab-quiz" class="pixel-btn btn-blue px-3 py-2 text-sm sm:text-base rounded-none">
+                    ⚔️ 퀴즈 도전
+                </button>
+                <button onclick="switchTab('rank')" id="tab-rank" class="pixel-btn btn-purple px-3 py-2 text-sm sm:text-base rounded-none">
+                    🏆 명예의 전당
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 메인 컨텐츠 영역 -->
+    <main class="flex-grow max-w-6xl w-full mx-auto p-4 sm:p-6">
+
+        <!-- 상태 알림 배너 (로딩 등) -->
+        <div id="loading-banner" class="pixel-box-sm bg-yellow-100 p-3 mb-6 flex items-center justify-center gap-3 text-center">
+            <span class="text-xl animate-spin">⏳</span>
+            <span class="text-sm sm:text-base">데이터 마을과 연결 중입니다... 잠시만 기다려주세요!</span>
+        </div>
+
+        <!-- ==========================================
+             1. 전문어 담벼락 (모아보기 페이지)
+             ========================================== -->
+        <section id="view-wall" class="space-y-6">
+            <!-- 상단 안내 및 필터 -->
+            <div class="pixel-box p-4 sm:p-6 bg-white flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-bold flex items-center gap-2">
+                        <span>🧱</span> 우리 반 전문어 담벼락
+                    </h2>
+                    <p class="text-sm sm:text-base text-slate-600 mt-1">
+                        친구들이 찾은 다양한 분야의 전문어를 살펴보세요! 카드를 누르면 크게 넘겨볼 수 있어요.
+                    </p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <select id="filter-field" onchange="renderWall()" class="pixel-input px-3 py-2 text-sm sm:text-base">
+                        <option value="ALL">🔍 모든 분야 보기</option>
+                    </select>
+                    <span id="total-count-badge" class="pixel-box-sm bg-blue-100 px-3 py-2 text-sm font-bold">
+                        총 0개
+                    </span>
+                </div>
+            </div>
+
+            <!-- 담벼락 그리드 (한눈에 보기) -->
+            <div id="wall-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 자바스크립트로 카드 렌더링 -->
+            </div>
+
+            <!-- 데이터 없을 때 안내 -->
+            <div id="wall-empty" class="hidden pixel-box p-10 text-center space-y-4">
+                <div class="text-5xl">📭</div>
+                <h3 class="text-xl font-bold">아직 등록된 전문어가 없어요!</h3>
+                <p class="text-slate-600">첫 번째 모험가가 되어 전문어를 등록해 볼까요?</p>
+                <button onclick="switchTab('upload')" class="pixel-btn btn-green px-6 py-3 text-lg">
+                    ➕ 첫 전문어 등록하러 가기
+                </button>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             2. 전문어 업로드 페이지
+             ========================================== -->
+        <section id="view-upload" class="hidden max-w-2xl mx-auto">
+            <div class="pixel-box p-6 sm:p-8 space-y-6">
+                <div class="border-b-4 border-slate-900 pb-4">
+                    <h2 class="text-2xl font-bold flex items-center gap-2">
+                        <span>📝</span> 새로운 전문어 등록하기
+                    </h2>
+                    <p class="text-sm text-slate-600 mt-1">
+                        내가 찾은 전문어와 그 뜻이 담긴 캡쳐 사진을 올려주세요! (사진은 자동으로 용량이 최적화됩니다)
+                    </p>
+                </div>
+
+                <form id="upload-form" onsubmit="handleUpload(event)" class="space-y-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- 학생 이름 -->
+                        <div>
+                            <label class="block font-bold mb-1 text-base">🧑‍🎓 내 이름 (출제자)</label>
+                            <input type="text" id="input-author" required placeholder="예: 1학년 2반 김철수" 
+                                   class="pixel-input w-full px-3 py-2.5 text-base">
+                            <p class="text-xs text-slate-500 mt-1">* 퀴즈를 풀 때 이 이름과 같으면 내 문제는 제외돼요!</p>
+                        </div>
+
+                        <!-- 관련 전문 분야 -->
+                        <div>
+                            <label class="block font-bold mb-1 text-base">🏷️ 관련 전문 분야</label>
+                            <input type="text" id="input-field" required placeholder="원하는 전문 분야를 자유롭게 입력하세요!" 
+                                   class="pixel-input w-full px-3 py-2.5 text-base">
+                            <p class="text-xs text-slate-500 mt-1">* 분야 제한 없이 자유롭게 직접 입력할 수 있어요!</p>
+                        </div>
+                    </div>
+
+                    <!-- 사진 업로드 2개 영역 -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
+                        <!-- 전문어 캡쳐 -->
+                        <div id="dropzone-term" tabindex="0" onclick="selectPasteTarget('term')" 
+                             class="pixel-box-sm p-4 bg-blue-50 space-y-3 cursor-pointer transition-all focus:ring-4 focus:ring-blue-400 outline-none">
+                            <div class="flex items-center justify-between">
+                                <label class="block font-bold text-base text-blue-900 cursor-pointer">1️⃣ 전문어 (사진 캡쳐)</label>
+                                <span id="badge-target-term" class="text-[11px] bg-blue-600 text-white px-2 py-0.5 font-bold">📋 붙여넣기 대기중</span>
+                            </div>
+                            <input type="file" id="input-term-img" accept="image/*" 
+                                   onchange="handleFileSelect(this, 'term')"
+                                   class="w-full text-sm file:mr-3 file:py-2 file:px-3 file:border-2 file:border-slate-900 file:bg-blue-300 file:font-bold hover:file:bg-blue-400 cursor-pointer">
+                            <div class="pixel-img-frame h-44 w-full bg-white relative">
+                                <img id="preview-term" src="" alt="전문어 미리보기" class="hidden max-h-full max-w-full object-contain">
+                                <div id="placeholder-term" class="text-slate-500 text-xs sm:text-sm text-center px-3 space-y-1">
+                                    <p class="font-bold text-blue-700">📋 여기를 클릭 후 Ctrl+V 붙여넣기!</p>
+                                    <p class="text-xs text-slate-400">또는 위 버튼으로 파일 선택</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 전문어의 뜻 캡쳐 -->
+                        <div id="dropzone-meaning" tabindex="0" onclick="selectPasteTarget('meaning')" 
+                             class="pixel-box-sm p-4 bg-emerald-50 space-y-3 cursor-pointer transition-all focus:ring-4 focus:ring-emerald-400 outline-none">
+                            <div class="flex items-center justify-between">
+                                <label class="block font-bold text-base text-emerald-900 cursor-pointer">2️⃣ 전문어의 뜻 (사진 캡쳐)</label>
+                                <span id="badge-target-meaning" class="hidden text-[11px] bg-emerald-600 text-white px-2 py-0.5 font-bold">📋 붙여넣기 대기중</span>
+                            </div>
+                            <input type="file" id="input-meaning-img" accept="image/*" 
+                                   onchange="handleFileSelect(this, 'meaning')"
+                                   class="w-full text-sm file:mr-3 file:py-2 file:px-3 file:border-2 file:border-slate-900 file:bg-emerald-300 file:font-bold hover:file:bg-emerald-400 cursor-pointer">
+                            <div class="pixel-img-frame h-44 w-full bg-white relative">
+                                <img id="preview-meaning" src="" alt="뜻 미리보기" class="hidden max-h-full max-w-full object-contain">
+                                <div id="placeholder-meaning" class="text-slate-500 text-xs sm:text-sm text-center px-3 space-y-1">
+                                    <p class="font-bold text-emerald-700">📋 여기를 클릭 후 Ctrl+V 붙여넣기!</p>
+                                    <p class="text-xs text-slate-400">또는 위 버튼으로 파일 선택</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4">
+                        <button type="submit" id="btn-submit-jargon" class="pixel-btn btn-green w-full py-3.5 text-xl">
+                            💾 도감에 등록하기!
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             3. 퀴즈 도전 페이지
+             ========================================== -->
+        <section id="view-quiz" class="hidden max-w-4xl mx-auto">
+            
+            <!-- 3-1. 퀴즈 시작 설정 화면 -->
+            <div id="quiz-setup" class="pixel-box p-6 sm:p-8 max-w-xl mx-auto space-y-6">
+                <div class="text-center space-y-2 border-b-4 border-slate-900 pb-4">
+                    <div class="text-4xl">⚔️</div>
+                    <h2 class="text-2xl font-bold">전문어 뜻 맞히기 퀴즈</h2>
+                    <p class="text-sm text-slate-600">
+                        제시된 <b>전문어 사진</b>을 보고, 알맞은 <b>뜻 사진</b>을 골라보세요!<br>
+                        <span class="text-red-600 font-bold">⏱️ 한 문제당 제한 시간은 15초입니다!</span><br>
+                        <span class="text-blue-600 font-bold">* 내가 등록한 문제는 자동으로 제외됩니다.</span>
+                    </p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block font-bold mb-1">🧑‍🎓 도전자 이름 (닉네임)</label>
+                        <input type="text" id="quiz-nickname" placeholder="등록할 때 쓴 이름과 같으면 내 문제가 제외돼요!" 
+                               class="pixel-input w-full px-4 py-3 text-base">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">🔢 문제 수 선택</label>
+                        <div class="grid grid-cols-3 gap-3">
+                            <button type="button" onclick="selectQuizCount(10)" id="cnt-10" class="quiz-cnt-btn pixel-btn btn-yellow py-3 text-base">
+                                10문제
+                            </button>
+                            <button type="button" onclick="selectQuizCount(20)" id="cnt-20" class="quiz-cnt-btn pixel-btn btn-white py-3 text-base">
+                                20문제
+                            </button>
+                            <button type="button" onclick="selectQuizCount('ALL')" id="cnt-ALL" class="quiz-cnt-btn pixel-btn btn-white py-3 text-base">
+                                모든 문항
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="quiz-available-info" class="pixel-box-sm bg-slate-100 p-3 text-center text-sm">
+                        현재 도전 가능한 문제: 계산 중...
+                    </div>
+
+                    <button onclick="startQuiz()" class="pixel-btn btn-blue w-full py-4 text-xl mt-2">
+                        🎮 퀴즈 배틀 시작!
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3-2. 퀴즈 진행 화면 -->
+            <div id="quiz-play" class="hidden space-y-6">
+                <!-- 상단 진행바 및 타이머 -->
+                <div class="pixel-box-sm p-4 bg-white space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <span class="bg-slate-900 text-white px-3 py-1 text-sm font-bold" id="quiz-progress-text">1 / 10</span>
+                            <span class="text-sm font-bold text-blue-700" id="quiz-player-tag">도전자: -</span>
+                        </div>
+                        <div class="flex items-center gap-3 sm:gap-4">
+                            <span id="quiz-timer-badge" class="bg-amber-200 border-2 border-slate-900 px-3 py-1 text-sm sm:text-base font-bold text-slate-900">
+                                ⏱️ 15초
+                            </span>
+                            <span class="font-bold text-emerald-700 text-sm sm:text-base" id="quiz-score-tag">현재 점수: 0점</span>
+                            <button onclick="quitQuiz()" class="pixel-btn btn-red px-3 py-1 text-xs">포기하기</button>
+                        </div>
+                    </div>
+                    <!-- 15초 카운트다운 게이지 바 -->
+                    <div class="w-full h-4 bg-slate-200 border-2 border-slate-900 overflow-hidden">
+                        <div id="quiz-timer-bar" class="h-full bg-emerald-500 transition-all duration-100 ease-linear" style="width: 100%;"></div>
+                    </div>
+                </div>
+
+                <!-- 문제 영역 (전문어 제시) -->
+                <div class="pixel-box p-5 sm:p-6 bg-amber-50 text-center space-y-3">
+                    <div class="inline-block bg-amber-300 border-2 border-slate-900 px-3 py-1 text-xs font-bold">
+                        분야: <span id="quiz-q-field">-</span> | 출제자: <span id="quiz-q-author">-</span>
+                    </div>
+                    <h3 class="text-lg sm:text-xl font-bold">Q. 다음 전문어의 뜻으로 알맞은 캡쳐를 고르세요!</h3>
+                    <div class="pixel-img-frame h-48 sm:h-56 max-w-md mx-auto bg-white p-2">
+                        <img id="quiz-q-img" src="" alt="문제 전문어" class="max-h-full max-w-full object-contain">
+                    </div>
+                </div>
+
+                <!-- 4지선다 보기 영역 (전문어 뜻 이미지들) -->
+                <div id="quiz-options" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- JS로 4개 보기 버튼 생성 -->
+                </div>
+
+                <!-- 피드백 및 다음 문제 버튼 -->
+                <div id="quiz-feedback" class="hidden pixel-box p-4 text-center space-y-3">
+                    <p id="quiz-feedback-msg" class="text-xl font-bold"></p>
+                    <button onclick="nextQuestion()" id="btn-next-q" class="pixel-btn btn-blue px-8 py-3 text-lg">
+                        다음 문제로 ➡️
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3-3. 퀴즈 결과 화면 -->
+            <div id="quiz-result" class="hidden pixel-box p-6 sm:p-10 max-w-xl mx-auto text-center space-y-6">
+                <div class="text-6xl animate-pixel-bounce">🎉</div>
+                <h2 class="text-3xl font-bold">퀘스트 완료!</h2>
+                <div class="pixel-box-sm bg-yellow-50 p-6 space-y-2">
+                    <p class="text-lg"><span id="res-nickname" class="font-bold text-blue-700"></span> 님의 기록</p>
+                    <p class="text-4xl font-bold text-emerald-600" id="res-score">0 / 0 정답!</p>
+                    <p class="text-sm text-slate-600" id="res-accuracy">정답률: 0%</p>
+                </div>
+                <p class="text-sm text-slate-600">점수가 명예의 전당에 자동으로 등록되었습니다!</p>
+                <div class="flex flex-wrap justify-center gap-3 pt-2">
+                    <button onclick="switchTab('rank')" class="pixel-btn btn-purple px-6 py-3 text-base">
+                        🏆 순위표 보러가기
+                    </button>
+                    <button onclick="resetQuizSetup()" class="pixel-btn btn-green px-6 py-3 text-base">
+                        🔄 다시 도전하기
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             4. 명예의 전당 (순위표)
+             ========================================== -->
+        <section id="view-rank" class="hidden max-w-3xl mx-auto space-y-6">
+            <div class="pixel-box p-6 bg-purple-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <span class="text-4xl">🏆</span>
+                    <div>
+                        <h2 class="text-2xl font-bold">전문어 마스터 명예의 전당</h2>
+                        <p class="text-sm text-slate-700">퀴즈 문항 수(10문제 / 20문제 / 모든 문항)마다 1등을 뽑습니다!</p>
+                    </div>
+                </div>
+                <button onclick="switchTab('quiz')" class="pixel-btn btn-blue px-4 py-2 text-sm">
+                    ⚔️ 나도 퀴즈 풀기
+                </button>
+            </div>
+
+            <!-- 문항 수별 챔피언(1등) 요약 카드 -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="rank-champions">
+                <!-- JS로 10문제, 20문제, 모든 문항 각각의 1등 렌더링 -->
+            </div>
+
+            <!-- 문항 수별 순위표 필터 탭 -->
+            <div class="flex flex-wrap gap-2">
+                <button onclick="selectRankFilter('10')" id="rank-tab-10" class="rank-tab-btn pixel-btn btn-yellow px-4 py-2 text-sm sm:text-base">
+                    🥇 10문제 순위
+                </button>
+                <button onclick="selectRankFilter('20')" id="rank-tab-20" class="rank-tab-btn pixel-btn btn-white px-4 py-2 text-sm sm:text-base">
+                    🥇 20문제 순위
+                </button>
+                <button onclick="selectRankFilter('ALL')" id="rank-tab-ALL" class="rank-tab-btn pixel-btn btn-white px-4 py-2 text-sm sm:text-base">
+                    🥇 모든 문항 순위
+                </button>
+            </div>
+
+            <div class="pixel-box overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-900 text-white text-sm sm:text-base">
+                                <th class="p-3 sm:p-4 text-center w-20">순위</th>
+                                <th class="p-3 sm:p-4">도전자 닉네임</th>
+                                <th class="p-3 sm:p-4 text-center">맞힌 개수</th>
+                                <th class="p-3 sm:p-4 text-center hidden sm:table-cell">정답률</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rank-tbody" class="divide-y-2 divide-slate-300 text-sm sm:text-base">
+                            <!-- JS로 순위 렌더링 -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="rank-empty" class="hidden p-10 text-center text-slate-500">
+                    해당 문항 수 퀴즈에 도전한 친구가 아직 없어요. 첫 번째 1등에 도전해보세요!
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==========================================
+         전문어 크게 보기 & 슬라이드 모달 (담벼락 클릭 시)
+         ========================================== -->
+    <div id="detail-modal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-2 sm:p-6">
+        <div class="pixel-box w-full max-w-4xl max-h-[95vh] flex flex-col bg-white overflow-hidden">
+            <!-- 모달 상단 헤더 -->
+            <div class="bg-amber-300 border-b-4 border-slate-900 p-3 sm:p-4 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="bg-slate-900 text-white px-2.5 py-1 text-xs sm:text-sm font-bold" id="modal-counter">1 / 1</span>
+                    <span class="font-bold text-base sm:text-lg" id="modal-field-badge">분야</span>
+                </div>
+                <button onclick="closeModal()" class="pixel-btn btn-red px-3 py-1 text-sm">✖ 닫기</button>
+            </div>
+
+            <!-- 모달 본문 (전문어 & 뜻 크게 보기) -->
+            <div class="p-4 sm:p-6 overflow-y-auto flex-grow space-y-4">
+                <div class="flex items-center justify-between bg-slate-100 border-2 border-slate-900 p-3">
+                    <span class="text-sm sm:text-base">🧑‍🎓 조사한 학생: <strong id="modal-author" class="text-blue-700">이름</strong></span>
+                    <span class="text-xs text-slate-500 hidden sm:inline">← / → 방향키로도 넘길 수 있어요!</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <!-- 전문어 큰 이미지 -->
+                    <div class="pixel-box-sm p-3 bg-blue-50 flex flex-col">
+                        <div class="font-bold text-blue-900 mb-2 text-center border-b-2 border-blue-200 pb-1">📌 전문어</div>
+                        <div class="pixel-img-frame flex-grow min-h-[220px] sm:min-h-[300px] bg-white p-2">
+                            <img id="modal-term-img" src="" alt="전문어" class="max-h-[45vh] max-w-full object-contain">
+                        </div>
+                    </div>
+
+                    <!-- 전문어의 뜻 큰 이미지 -->
+                    <div class="pixel-box-sm p-3 bg-emerald-50 flex flex-col">
+                        <div class="font-bold text-emerald-900 mb-2 text-center border-b-2 border-emerald-200 pb-1">💡 전문어의 뜻</div>
+                        <div class="pixel-img-frame flex-grow min-h-[220px] sm:min-h-[300px] bg-white p-2">
+                            <img id="modal-meaning-img" src="" alt="전문어 뜻" class="max-h-[45vh] max-w-full object-contain">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 모달 하단 이전/다음 넘기기 컨트롤 -->
+            <div class="bg-slate-100 border-t-4 border-slate-900 p-3 sm:p-4 flex items-center justify-between gap-4">
+                <button onclick="navigateModal(-1)" class="pixel-btn btn-yellow px-4 sm:px-6 py-2.5 text-sm sm:text-base flex-1 sm:flex-initial">
+                    ◀ 이전 전문어
+                </button>
+                <span class="text-xs sm:text-sm text-slate-600 text-center hidden sm:block">
+                    전문어의 특징(정확성, 간결성, 폐쇄성 등)을 생각하며 살펴보세요!
+                </span>
+                <button onclick="navigateModal(1)" class="pixel-btn btn-yellow px-4 sm:px-6 py-2.5 text-sm sm:text-base flex-1 sm:flex-initial">
+                    다음 전문어 ▶
+                </button>
+            </div>
+        </div>
     </div>
-    <label class="block text-xs font-bold">정답<select id="quiz-answer" class="mt-1 w-full border border-pink-200 rounded p-2"><option value="0">1번</option><option value="1">2번</option><option value="2">3번</option><option value="3">4번</option></select></label>
-    <label class="block text-xs font-bold">정답 해설<textarea id="quiz-explanation" required rows="2" class="mt-1 w-full bg-pink-50 border-2 border-pink-200 rounded-lg p-2" placeholder="정답의 까닭을 설명하세요."></textarea></label>
-    <button class="w-full pixel-btn bg-emerald-300 py-3 rounded-lg font-bold">📥 퀴즈 등록하기</button>
-   </form>
-  </div>
-  <div class="lg:col-span-7 space-y-4">
-   <div class="pixel-box bg-pink-100 border-pink-300 p-4 rounded-xl space-y-3">
-    <h3 class="font-bold text-pink-900">🗂️ 퀴즈 관리 메뉴</h3>
-    <div id="quiz-status-panel" class="space-y-2">
-     <h4 class="font-bold text-violet-900 text-sm">📊 퀴즈 현황</h4>
-     <div class="flex flex-wrap gap-2">
-      <button type="button" onclick="openQuizUsageStats()" class="pixel-btn bg-violet-200 px-3 py-2 rounded text-xs">📈 문항별 누적 통계</button>
-      <button type="button" onclick="openQuizErrorReports()" class="pixel-btn bg-rose-200 px-3 py-2 rounded text-xs inline-flex items-center gap-2">🚩 오류 신고 확인 <span id="quiz-error-report-badge" class="hidden bg-rose-600 text-white rounded-full px-2 py-1 font-bold">0</span></button>
-     </div>
+
+    <!-- 커스텀 알림 토스트 / 메시지 박스 (alert 대체) -->
+    <div id="toast-box" class="hidden fixed bottom-6 right-6 z-50 pixel-box bg-slate-900 text-white px-5 py-4 max-w-sm shadow-2xl">
+        <div class="flex items-center gap-3">
+            <span id="toast-icon" class="text-2xl">💬</span>
+            <p id="toast-msg" class="text-sm sm:text-base leading-snug"></p>
+        </div>
     </div>
-    <div class="border-t border-amber-200 pt-3 space-y-2">
-     <div class="flex items-center justify-between gap-2">
-      <h4 class="font-bold text-amber-900 text-sm">🔒 설정</h4>
-      <button type="button" onclick="openSettingsPasswordModal()" class="pixel-btn bg-amber-200 px-4 py-2 rounded-lg text-sm font-bold">설정 열기</button>
-     </div>
-    </div>
-    <div id="quiz-settings-panel" class="hidden border-t border-amber-200 pt-3 space-y-2" style="display:none">
-     <div class="flex flex-wrap items-center justify-between gap-2"><h4 class="font-bold text-amber-900 text-sm">🔧 설정 세부 항목</h4><button type="button" onclick="lockQuizSettings()" class="text-xs underline text-slate-600">설정 잠그기</button></div>
-     <div class="flex flex-wrap gap-2">
-      <button onclick="exportQuizzes(false)" class="pixel-btn bg-sky-200 px-3 py-2 rounded text-xs">💾 전체 퀴즈 내보내기</button>
-      <button onclick="exportQuizzes(true)" class="pixel-btn bg-cyan-200 px-3 py-2 rounded text-xs">📤 기본문제 18개 제외하고 내보내기</button>
-      <button onclick="openFirebaseStorageReport()" class="pixel-btn bg-indigo-200 px-3 py-2 rounded text-xs">☁️ Firebase 용량 확인</button>
-      <button onclick="openImportModal()" class="pixel-btn bg-purple-200 px-3 py-2 rounded text-xs">📥 학급 퀴즈 붙여넣기</button>
-      <button onclick="resetQuizzesToDefault()" class="pixel-btn bg-rose-200 px-3 py-2 rounded text-xs">🔄 기본 리셋</button>
-     </div>
-     <div class="border-t-2 border-amber-200 pt-3 mt-3 space-y-3 text-sm text-left">
-      <h4 class="font-bold text-amber-900">🏆 보물 상자 최종 미션 설정</h4>
-      <label class="block text-xs font-bold">① 최종 미션 형태
-       <select id="final-mission-count" onchange="saveFinalMissionSettings()" class="mt-1 w-full border-2 border-amber-200 rounded-lg p-2 bg-white">
-        <option value="3">보물 수호자의 최종 시험 (추천) · 3문제</option><option value="3seal">세 개의 문법 봉인 풀기 · 3문제</option><option value="3duel">최후의 문법 결투 · 3문제</option>
-       </select>
-      </label>
-      <label class="block text-xs font-bold">② 승리 조건
-       <select id="final-mission-pass" onchange="saveFinalMissionSettings()" class="mt-1 w-full border-2 border-amber-200 rounded-lg p-2 bg-white">
-        <option value="2">3문제 중 2문제 이상 정답 (추천)</option><option value="3">3문제 모두 정답</option><option value="4of5">5문제 중 4문제 이상 정답</option>
-       </select>
-      </label>
-      <label class="block text-xs font-bold">③ 최종 미션 실패 시
-       <select id="final-mission-fail" onchange="saveFinalMissionSettings()" class="mt-1 w-full border-2 border-amber-200 rounded-lg p-2 bg-white">
-        <option value="pass">현재 위치에 남고 다음 팀에게 차례 넘기기 (추천)</option><option value="retreat">29번 칸으로 후퇴</option><option value="retry">현재 팀이 즉시 재도전</option>
-       </select>
-      </label>
-      <label class="block text-xs font-bold">④ 최종 미션 문제 출제 방식
-       <select id="final-mission-source" onchange="saveFinalMissionSettings()" class="mt-1 w-full border-2 border-amber-200 rounded-lg p-2 bg-white">
-        <option value="weak">학생들의 오답 및 취약 영역에서 출제 (추천)</option><option value="random">전체 퀴즈에서 무작위 출제</option><option value="category">서로 다른 문법 영역에서 한 문제씩 출제</option>
-       </select>
-      </label>
-      <p class="text-[11px] text-amber-900">설정은 이 브라우저에 자동 저장됩니다. 기본 추천 설정은 3문제 중 2문제 이상 정답이며, 최종 미션을 통과해야 승리합니다.</p>
-     </div>
-     <p class="text-xs text-amber-900">퀴즈 데이터 백업·가져오기, Firebase 용량 확인 및 기본 문제 초기화 기능입니다.</p>
-    </div>
-   </div>
-   <div class="pixel-box bg-white border-pink-300 p-4 rounded-xl">
-    <h3 class="font-bold mb-1">📚 등록된 퀴즈 목록</h3>
-    <div id="quiz-list-container" class="space-y-3 max-h-[600px] overflow-y-auto"></div>
-   </div>
-  </div>
- </div>
-</section>
 
-<section id="game-tab" class="space-y-6">
- <div id="game-setup-panel" class="pixel-box bg-white border-pink-300 p-6 rounded-2xl text-center max-w-xl mx-auto space-y-6 my-8">
-  <div><h2 class="text-2xl font-bold text-pink-900">🎲 보드게임 탐험대 설정</h2><p class="text-sm text-slate-600 mt-2">문법 퀴즈를 풀고 보물 상자의 최종 미션에 도전하세요!</p></div>
-  <div class="space-y-3 bg-pink-50 p-4 rounded-xl border-2 border-pink-200">
-   <label class="block text-sm font-bold text-pink-900">플레이어(팀) 수 선택</label>
-   <div class="flex justify-center gap-3 flex-wrap">
-    <button onclick="setPlayerCount(2)" id="pcount-2" class="pixel-btn bg-purple-300 px-4 py-2 rounded-lg font-bold">2팀</button>
-    <button onclick="setPlayerCount(3)" id="pcount-3" class="pixel-btn bg-white px-4 py-2 rounded-lg font-bold">3팀</button>
-    <button onclick="setPlayerCount(4)" id="pcount-4" class="pixel-btn bg-white px-4 py-2 rounded-lg font-bold">4팀</button>
-   </div>
-   <div id="player-names-input" class="grid grid-cols-2 gap-3 mt-4 text-left"></div>
-  </div>
-  <div class="bg-purple-50 p-4 rounded-xl border-2 border-purple-200 text-left space-y-2">
-   <label for="game-category-filter" class="block text-sm font-bold text-purple-900">📚 출제할 문법 영역</label>
-   <select id="game-category-filter" class="w-full border-2 border-purple-200 rounded-lg p-3 bg-white text-sm">
-    <option value="all">전체 문법 영역에서 출제</option>
-    <option value="단어와 형태소">단어와 형태소</option>
-    <option value="어근과 접사">어근과 접사</option>
-    <option value="단어의 종류">단어의 종류</option>
-    <option value="새말의 형성">새말의 형성</option>
-    <option value="기타">기타</option>
-   </select>
-   <p id="game-category-count" class="text-xs text-purple-700">선택한 영역의 문제 수를 확인할 수 있습니다.</p>
-  </div>
-  <div id="resume-game-panel" class="hidden bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4 text-left space-y-3">
-   <div><b class="text-emerald-900">💾 이어 할 게임이 저장되어 있습니다.</b><p id="resume-game-summary" class="text-xs text-emerald-800 mt-1">진행 중이던 게임을 이어 할 수 있습니다.</p></div>
-   <div class="grid grid-cols-2 gap-2"><button type="button" onclick="resumeSavedGame()" class="pixel-btn bg-emerald-300 py-3 rounded-lg font-bold">▶ 이어하기</button><button type="button" onclick="discardSavedGame()" class="pixel-btn bg-slate-200 py-3 rounded-lg">새 게임 시작</button></div>
-  </div>
-  <button onclick="startBoardGame()" class="w-full pixel-btn bg-amber-300 py-4 text-lg font-bold rounded-xl">🚀 국어 문법 보드게임 시작!</button>
- </div>
+    <!-- Firebase SDK 및 애플리케이션 로직 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
- <div id="game-play-panel" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
-  <aside class="lg:col-span-4 space-y-4">
-   <div class="pixel-box bg-amber-50 border-amber-300 p-4 rounded-2xl text-center space-y-3">
-    <span class="text-xs bg-amber-300 text-amber-900 px-3 py-1 rounded-full font-bold">CURRENT TURN</span>
-    <div class="flex items-center justify-center gap-3 py-2"><span id="turn-avatar" class="text-4xl">🐰</span><div class="text-left"><div id="turn-name" class="text-lg font-bold text-pink-900"></div><div id="turn-pos" class="text-xs text-slate-600"></div></div></div>
-    <div class="pt-3 border-t border-amber-200 flex flex-col items-center gap-3">
-     <div id="dice-visual" class="w-20 h-20 bg-pink-100 border-4 border-pink-400 rounded-2xl flex items-center justify-center text-4xl cursor-pointer" onclick="rollDice()">🎲</div>
-     <button id="roll-btn" onclick="rollDice()" class="w-full pixel-btn bg-rose-400 text-white py-3 text-base font-bold rounded-xl">🎲 주사위 굴리기!</button>
-    </div>
-   </div>
-   <div class="pixel-box bg-white border-pink-300 p-4 rounded-2xl space-y-3"><h3 class="font-bold border-b border-pink-200 pb-2 flex justify-between"><span>📊 탐험대 전황</span><span id="active-quiz-info" class="text-xs text-emerald-600"></span></h3><div id="scoreboard" class="space-y-2"></div></div>
-   <button type="button" id="restart-game-btn" class="w-full pixel-btn bg-slate-200 py-2 rounded-lg text-sm">🔄 게임 다시 시작</button>
-  </aside>
-  <div class="lg:col-span-8 pixel-box bg-white border-pink-300 p-4 rounded-2xl">
-   <div class="flex flex-wrap justify-between items-center gap-2 mb-3"><h3 class="font-bold text-pink-900">🗺️ 문법 탐험 맵 (총 31칸)</h3><div class="text-xs flex gap-2 flex-wrap"><span>📜 퀴즈</span><span>⚠️ 함정</span></div></div>
-   <div id="board-grid" class="grid grid-cols-5 md:grid-cols-6 gap-2"></div>
-   <div class="mt-4 p-3 bg-purple-50 border-2 border-purple-200 rounded-xl"><h4 class="font-bold text-purple-900 text-sm mb-2">⚠️ 함정 도감</h4><div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
-    <div class="bg-white rounded p-2">💣 <b>시간 폭탄</b><p>10초 안에 정답, 오답·시간 초과 시 원래 자리</p></div>
-    <div class="bg-white rounded p-2">🟢 <b>슬라임</b><p>다음 차례 4 이상 탈출</p></div>
-    <div class="bg-white rounded p-2">👹 <b>도깨비 소굴</b><p>문제마다 15초 · 오답/시간 초과 시 탈락</p></div>
-    <div class="bg-white rounded p-2">🌀 <b>차원 포털</b><p>무작위 위치 이동</p></div>
-    <div class="bg-white rounded p-2">🧚 <b>도둑 요정</b><p>퀴즈 정답 후 원하는 상대와 말 위치 교환 선택</p></div>
-   </div></div>
-  </div>
- </div>
-</section>
-</main>
+        // ==========================================
+        // 1. Firebase 초기화 및 전역 상태
+        // ==========================================
+        // [선생님 안내] 직접 만드신 Firebase 프로젝트의 설정값을 아래에 붙여넣으세요!
+        // (현재 환경에서 자동 제공되는 설정이 있으면 우선 사용합니다)
+        const manualFirebaseConfig = {
+            apiKey: "여기에_API_KEY_입력",
+            authDomain: "여기에_AUTH_DOMAIN_입력",
+            projectId: "여기에_PROJECT_ID_입력",
+            storageBucket: "여기에_STORAGE_BUCKET_입력",
+            messagingSenderId: "여기에_MESSAGING_SENDER_ID_입력",
+            appId: "여기에_APP_ID_입력"
+        };
 
-<!-- 공통 퀴즈 모달 -->
-<div id="quiz-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
- <div class="modal-card pixel-box bg-white max-w-lg w-full p-6 rounded-2xl space-y-4 border-pink-400">
-  <div class="flex justify-between gap-2 border-b-2 border-pink-200 pb-3"><span id="modal-category" class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full font-bold"></span><span id="modal-author" class="text-xs text-pink-700"></span></div>
-  <div id="trap-timer" class="hidden text-center text-3xl font-bold text-rose-600 bg-rose-100 border-2 border-rose-300 rounded-xl p-2">⏱️ 20초</div>
-  <button type="button" onclick="reportCurrentQuizError()" class="text-xs text-rose-700 underline">🚩 이 문제의 오류 신고</button>
-  <div><h3 id="quiz-heading" class="text-xs text-pink-600 font-bold mb-1">[ 국어 문법 퀴즈 ]</h3><p id="modal-question" class="text-lg font-bold leading-relaxed"></p></div>
-  <div id="modal-options" class="grid grid-cols-1 gap-2"></div>
-  <button id="submit-quiz-btn" onclick="submitQuizAnswer()" disabled class="w-full pixel-btn bg-slate-200 text-slate-400 py-3 font-bold rounded-xl">정답 제출하기</button>
- </div>
-</div>
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'jargon-quest-class';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config) 
+            : (manualFirebaseConfig.apiKey !== "여기에_API_KEY_입력" ? manualFirebaseConfig : null);
 
-<!-- 결과 모달 -->
-<div id="result-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[55] hidden items-center justify-center p-4">
- <div class="modal-card pixel-box bg-white max-w-md w-full p-6 rounded-2xl text-center space-y-4 border-purple-400">
-  <div id="result-icon" class="text-6xl">⭕</div><h3 id="result-title" class="text-2xl font-bold text-emerald-600"></h3>
-  <div class="bg-purple-50 p-4 rounded-xl text-left border border-purple-200"><b class="text-xs text-purple-900">💡 정답 및 해설</b><p id="result-explanation" class="text-sm mt-2"></p></div>
-  <p id="result-action-msg" class="text-sm font-bold text-purple-800"></p>
-  <button type="button" onclick="reportCurrentQuizError('정답 및 해설 확인 화면')" class="text-xs text-rose-700 underline">🚩 정답 또는 해설에 오류가 있나요? 오류 신고</button>
-  <button onclick="closeResultModal()" class="w-full pixel-btn bg-amber-300 py-3 font-bold rounded-xl">다음 팀으로 ➔</button>
- </div>
-</div>
+        let db = null;
+        let auth = null;
+        let currentUser = null;
 
-<!-- 게임 내 안내 모달: 브라우저 alert/confirm/prompt 대신 사용 -->
-<div id="game-notice-modal" class="fixed inset-0 bg-slate-900/65 backdrop-blur-sm z-[90] hidden items-center justify-center p-4" aria-hidden="true">
- <div class="modal-card pixel-box bg-white max-w-md w-full p-6 rounded-2xl space-y-4 border-indigo-400 text-center">
-  <div class="text-5xl" id="game-notice-icon">📢</div>
-  <h3 id="game-notice-title" class="text-xl font-bold text-indigo-900">게임 안내</h3>
-  <p id="game-notice-message" class="text-sm leading-relaxed text-slate-700 whitespace-pre-line"></p>
-  <div id="game-notice-extra" class="text-left"></div>
-  <div class="flex gap-2">
-   <button type="button" id="game-notice-cancel" onclick="closeGameNotice()" class="flex-1 pixel-btn bg-slate-200 py-3 rounded-lg font-bold">닫기</button>
-   <button type="button" id="game-notice-primary" onclick="handleGameNoticePrimary()" class="flex-1 pixel-btn bg-indigo-300 py-3 rounded-lg font-bold">확인</button>
-  </div>
- </div>
-</div>
+        let allJargons = [];
+        let filteredJargons = [];
+        let allScores = [];
+        let currentModalIndex = 0;
 
-<!-- 도깨비 대결 모달 -->
-<div id="goblin-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[60] hidden items-center justify-center p-4">
- <div class="modal-card pixel-box bg-purple-100 max-w-lg w-full p-6 rounded-2xl text-center space-y-4 border-purple-400">
-  <div class="text-6xl animate-bounce">👹</div><h2 class="text-2xl font-bold text-purple-900">도깨비 문법 대결!</h2>
-  <p id="goblin-opponent-name" class="text-sm font-bold text-purple-700"></p>
-  <div class="bg-white p-4 rounded-xl border-2 border-purple-300 text-left space-y-3"><p class="text-xs font-bold text-purple-700">⚔️ 대결 문제 — 모든 팀이 차례로 퀴즈를 풀며 오답자는 탈락합니다.</p><p id="goblin-question" class="font-bold"></p><div id="goblin-options" class="grid grid-cols-1 gap-2 text-sm"></div></div>
-  <div class="grid grid-cols-2 gap-3"><button id="goblin-current-win" onclick="finishGoblinDuel('current')" class="pixel-btn bg-emerald-300 p-3 rounded-lg font-bold text-sm">🏆 현재 팀 승리</button><button id="goblin-opponent-win" onclick="finishGoblinDuel('opponent')" class="pixel-btn bg-rose-300 p-3 rounded-lg font-bold text-sm">👹 상대 팀 승리</button></div>
-  <button onclick="cancelGoblinDuel()" class="text-xs underline text-slate-600">대결 취소</button>
- </div>
-</div>
+        // 이미지 업로드 상태
+        let termBase64 = "";
+        let meaningBase64 = "";
+        let activePasteTarget = "term";
 
-<!-- 데이터 가져오기 모달 -->
-<div id="import-modal" class="fixed inset-0 bg-slate-900/60 z-[65] hidden items-center justify-center p-4">
- <div class="modal-card pixel-box bg-white max-w-lg w-full p-6 rounded-2xl space-y-4 border-purple-400"><h3 class="text-lg font-bold text-purple-900">📥 학급 퀴즈 데이터 일괄 등록</h3><p class="text-xs text-slate-600">JSON 배열을 붙여넣으세요.</p><textarea id="import-json-text" rows="7" class="w-full bg-purple-50 border border-purple-300 rounded-xl p-3 text-xs" placeholder='[{"author":"김국어","category":"단어와 형태소","question":"문제","options":["A","B","C","D"],"answer":0,"explanation":"해설"}]'></textarea><div class="flex justify-end gap-2"><button onclick="closeImportModal()" class="pixel-btn bg-slate-200 px-4 py-2 rounded">취소</button><button onclick="importQuizzesFromJSON()" class="pixel-btn bg-purple-300 px-4 py-2 rounded">확인 및 추가</button></div></div>
-</div>
+        // 퀴즈 상태
+        let selectedQuizCount = 10;
+        let quizQuestions = [];
+        let currentQuestionIdx = 0;
+        let quizScore = 0;
+        let quizPlayerName = "";
+        let isQuestionAnswered = false;
+        let questionTimer = null;
+        let timeLeft = 15.0;
 
-<!-- 개별 퀴즈 상세 확인 모달 -->
-<div id="quiz-detail-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[68] hidden items-center justify-center p-4" aria-hidden="true">
- <div class="modal-card pixel-box bg-white max-w-lg w-full p-6 rounded-2xl space-y-4 border-emerald-400 max-h-[90vh] overflow-y-auto">
-  <div class="flex justify-between items-center gap-3 border-b-2 border-emerald-200 pb-3">
-   <div><h3 class="text-lg font-bold text-emerald-900">🔎 문제 상세 확인</h3><p id="detail-quiz-meta" class="text-xs text-slate-500 mt-1"></p></div>
-   <button type="button" onclick="closeQuizDetail()" class="pixel-btn bg-slate-200 px-3 py-2 rounded text-sm" aria-label="닫기">✕</button>
-  </div>
-  <div><p class="text-xs font-bold text-pink-700 mb-1">문제</p><p id="detail-quiz-question" class="font-bold leading-relaxed"></p></div>
-  <div><p class="text-xs font-bold text-pink-700 mb-2">선택지</p><div id="detail-quiz-options" class="grid grid-cols-1 gap-2 text-sm"></div></div>
-  <div class="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-3 space-y-2">
-   <p id="detail-quiz-answer" class="font-bold text-emerald-800"></p>
-   <div><p class="text-xs font-bold text-emerald-800">💡 정답 해설</p><p id="detail-quiz-explanation" class="text-sm mt-1"></p></div>
-  </div>
-  <div class="flex flex-wrap gap-2"><button type="button" onclick="closeQuizDetail()" class="flex-1 pixel-btn bg-slate-200 py-3 rounded-lg font-bold">닫기</button><button type="button" onclick="openQuizEdit()" class="pixel-btn bg-sky-200 px-4 py-3 rounded-lg font-bold text-sky-900">문제 수정</button><button type="button" onclick="deleteQuizFromDetail()" class="pixel-btn bg-rose-200 px-4 py-3 rounded-lg font-bold text-rose-800">문제 삭제</button></div>
- </div>
-</div>
+        // 명예의 전당 필터 상태
+        let currentRankFilter = "10";
 
-<!-- 퀴즈 수정 모달 -->
-<div id="quiz-edit-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[69] hidden items-center justify-center p-4">
- <div class="modal-card pixel-box bg-white max-w-lg w-full p-6 rounded-2xl space-y-3 border-sky-400 max-h-[90vh] overflow-y-auto">
-  <h3 class="text-lg font-bold text-sky-900">✏️ 퀴즈 수정</h3>
-  <label class="block text-xs font-bold">문제 난이도<select id="edit-quiz-difficulty" class="mt-1 w-full border-2 border-sky-200 rounded-lg p-2"><option value="상">상 · 40초</option><option value="중">중 · 30초</option><option value="하">하 · 20초</option></select><p id="edit-quiz-difficulty-note" class="text-[11px] text-slate-500 mt-1">난이도에 따라 게임 중 제한 시간이 달라집니다.</p></label>
-   <label class="block text-xs font-bold">문법 주제<select id="edit-quiz-category" class="mt-1 w-full border-2 border-sky-200 rounded-lg p-2"><option>단어와 형태소</option><option>어근과 접사</option><option>단어의 종류</option><option>새말의 형성</option><option>기타</option></select></label>
-  <label class="block text-xs font-bold">문제 지문<textarea id="edit-quiz-question" rows="3" class="mt-1 w-full border-2 border-sky-200 rounded-lg p-2"></textarea></label>
-  <div class="space-y-2"><label class="text-xs font-bold" for="edit-quiz-option-count">선택지 유형</label><select id="edit-quiz-option-count" onchange="updateQuizOptionInputs(true)" class="w-full border-2 border-sky-200 rounded-lg p-2 bg-white"><option value="4">4개 선택지 (객관식)</option><option value="2">2개 선택지 (OX 문제)</option></select><input id="edit-opt-0" class="w-full border border-sky-200 rounded p-2 text-sm" placeholder="1번 보기"><input id="edit-opt-1" class="w-full border border-sky-200 rounded p-2 text-sm" placeholder="2번 보기"><input id="edit-opt-2" class="w-full border border-sky-200 rounded p-2 text-sm" placeholder="3번 보기"><input id="edit-opt-3" class="w-full border border-sky-200 rounded p-2 text-sm" placeholder="4번 보기"></div>
-  <label class="block text-xs font-bold">정답<select id="edit-quiz-answer" class="mt-1 w-full border border-sky-200 rounded p-2"><option value="0">1번</option><option value="1">2번</option><option value="2">3번</option><option value="3">4번</option></select></label>
-  <label class="block text-xs font-bold">정답 해설<textarea id="edit-quiz-explanation" rows="2" class="mt-1 w-full border-2 border-sky-200 rounded-lg p-2"></textarea></label>
-  <div class="flex gap-2"><button type="button" onclick="closeQuizEdit()" class="flex-1 pixel-btn bg-slate-200 py-3 rounded-lg">취소</button><button type="button" onclick="saveQuizEdit()" class="flex-1 pixel-btn bg-sky-300 py-3 rounded-lg font-bold">수정 내용 저장</button></div>
- </div>
-</div>
+        // ==========================================
+        // 2. 알림(Toast) 및 화면 탭 전환
+        // ==========================================
+        function showToast(msg, icon = "💬") {
+            const box = document.getElementById("toast-box");
+            document.getElementById("toast-msg").textContent = msg;
+            document.getElementById("toast-icon").textContent = icon;
+            box.classList.remove("hidden");
+            clearTimeout(box._timeout);
+            box._timeout = setTimeout(() => {
+                box.classList.add("hidden");
+            }, 3000);
+        }
 
-<!-- 문항별 누적 통계 모달 -->
-<div id="quiz-usage-stats-modal" class="fixed inset-0 bg-slate-900/80 z-[85] hidden items-center justify-center p-4">
- <div class="modal-card pixel-box bg-white max-w-4xl w-full p-5 rounded-2xl space-y-4 border-violet-400 max-h-[92vh] overflow-y-auto">
-  <div class="flex justify-between items-center gap-2"><div><h3 class="text-xl font-bold text-violet-900">📊 문항별 누적 출제·응답 통계</h3><p class="text-xs text-slate-500 mt-1">여러 차례의 게임에서 누적된 출제 횟수와 정답·오답 기록입니다.</p></div><button onclick="closeQuizUsageStats()" class="pixel-btn bg-slate-200 px-3 py-2 rounded">✕</button></div>
-  <div id="quiz-usage-stats-summary" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
-  <div class="flex flex-wrap gap-2"><button onclick="downloadWrongRateReport()" class="pixel-btn bg-sky-200 px-3 py-2 rounded text-xs">⬇️ 오답률 다운로드</button><button onclick="resetAllWrongRates()" class="pixel-btn bg-rose-200 px-3 py-2 rounded text-xs">🧹 오답률 전체 초기화</button></div>
-  <div class="flex flex-wrap items-center gap-2"><input id="quiz-stats-search" oninput="renderQuizUsageStats()" class="flex-1 min-w-[180px] border-2 border-violet-200 rounded-lg p-2 text-sm" placeholder="문제 내용 또는 출제자 검색"><select id="quiz-stats-sort" onchange="renderQuizUsageStats()" class="border-2 border-violet-200 rounded-lg p-2 text-sm"><option value="asked">출제 횟수순</option><option value="accuracy">오답률 높은 순</option><option value="wrong">오답 횟수순</option><option value="wrongChoice">오답 선택지 많은 순</option></select></div>
-  <div id="quiz-usage-stats-list" class="space-y-3"></div>
-  <button onclick="closeQuizUsageStats()" class="w-full pixel-btn bg-slate-200 py-3 rounded-lg">닫기</button>
- </div>
-</div>
+        window.switchTab = function(tabName) {
+            const views = ["wall", "upload", "quiz", "rank"];
+            views.forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                if (el) el.classList.add("hidden");
+            });
+            const target = document.getElementById(`view-${tabName}`);
+            if (target) target.classList.remove("hidden");
 
-<!-- 퀴즈 오류 신고 확인 모달 -->
-<div id="quiz-error-reports-modal" class="fixed inset-0 bg-slate-900/80 z-[86] hidden items-center justify-center p-4">
- <div class="modal-card pixel-box bg-white max-w-2xl w-full p-5 rounded-2xl space-y-4 border-rose-400 max-h-[92vh] overflow-y-auto">
-  <div class="flex justify-between items-center"><h3 class="text-xl font-bold text-rose-900">🚩 퀴즈 오류 신고</h3><button onclick="hideModal('quiz-error-reports-modal')" class="pixel-btn bg-slate-200 px-3 py-2 rounded">✕</button></div>
-  <p class="text-xs text-slate-500">Firebase에 저장된 학급 공용 신고 목록입니다. 모든 사용자가 같은 목록을 확인합니다.</p><div id="quiz-error-reports-list" class="space-y-2"></div>
-  <button onclick="clearQuizErrorReports()" class="pixel-btn bg-rose-200 px-3 py-2 rounded text-xs">신고 기록 삭제</button>
- </div>
-</div>
+            if (tabName === "wall") renderWall();
+            if (tabName === "quiz") updateAvailableQuizInfo();
+            if (tabName === "rank") renderRank();
+        };
 
-<!-- Firebase 저장 용량 확인 모달 -->
-<div id="firebase-storage-modal" class="fixed inset-0 bg-slate-900/80 z-[86] hidden items-center justify-center p-4">
- <div class="modal-card pixel-box bg-white max-w-2xl w-full p-5 rounded-2xl space-y-4 border-indigo-400 max-h-[92vh] overflow-y-auto">
-  <div class="flex justify-between items-center gap-2"><div><h3 class="text-xl font-bold text-indigo-900">☁️ Firebase 저장 용량 확인</h3><p class="text-xs text-slate-500 mt-1">현재 공용 퀴즈 컬렉션을 읽어 계산한 추정치입니다.</p></div><button onclick="closeFirebaseStorageReport()" class="pixel-btn bg-slate-200 px-3 py-2 rounded">✕</button></div>
-  <div id="firebase-storage-status" class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm">확인 버튼을 눌러 서버 데이터를 조회하세요.</div>
-  <div id="firebase-storage-summary" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
-  <div><h4 class="font-bold text-indigo-900 mb-2">📦 용량이 큰 문항 TOP 5</h4><div id="firebase-storage-largest" class="space-y-2 text-sm"><p class="text-slate-400">아직 조회하지 않았습니다.</p></div></div>
-  <p class="text-xs text-slate-500 bg-slate-50 rounded-lg p-3">※ 표시 용량은 문서 데이터를 JSON으로 직렬화한 바이트 수를 합산한 추정치입니다. Firestore의 실제 저장 용량에는 필드·인덱스 등의 오버헤드가 포함되므로 콘솔의 실제 사용량과 다를 수 있습니다. 이 화면은 앱의 퀴즈 컬렉션만 계산하며 Firebase 프로젝트 전체 사용량이나 읽기·쓰기 횟수를 조회하지 않습니다.</p>
-  <div class="flex gap-2"><button onclick="refreshFirebaseStorageReport()" class="flex-1 pixel-btn bg-indigo-200 py-3 rounded-lg font-bold">🔄 서버에서 다시 조회</button><button onclick="closeFirebaseStorageReport()" class="flex-1 pixel-btn bg-slate-200 py-3 rounded-lg">닫기</button></div>
- </div>
-</div>
+        // ==========================================
+        // 3. Firebase 연결 및 실시간 데이터 동기화
+        // ==========================================
+        async function initFirebase() {
+            const banner = document.getElementById("loading-banner");
+            if (!firebaseConfig) {
+                banner.innerHTML = `<span class="text-xl">⚠️</span><span>Firebase 설정이 연결되지 않았습니다. 코드 상단의 <b>manualFirebaseConfig</b>에 설정값을 입력해주세요!</span>`;
+                banner.classList.replace("bg-yellow-100", "bg-red-100");
+                return;
+            }
 
-<!-- 설정 비밀번호 확인 모달 -->
-<div id="settings-password-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[88] hidden items-center justify-center p-4" aria-hidden="true">
- <form class="modal-card pixel-box bg-white max-w-sm w-full p-6 rounded-2xl space-y-4 border-amber-400" onsubmit="event.preventDefault();verifySettingsPassword()">
-  <div class="flex justify-between items-center"><h3 class="text-lg font-bold text-amber-900">🔒 설정 접근</h3><button type="button" onclick="hideModal('settings-password-modal')" class="pixel-btn bg-slate-200 px-3 py-2 rounded">✕</button></div>
-  <p class="text-sm text-slate-600">설정 세부 항목을 보려면 비밀번호를 입력하세요.</p>
-  <label class="block text-xs font-bold">비밀번호<input id="settings-password-input" type="password" autocomplete="off" class="mt-1 w-full border-2 border-amber-200 rounded-lg p-3 text-base" placeholder="비밀번호 입력"></label>
-  <p id="settings-password-error" class="hidden text-xs text-rose-600">비밀번호가 올바르지 않습니다.</p>
-  <div class="flex gap-2"><button type="button" onclick="hideModal('settings-password-modal')" class="flex-1 pixel-btn bg-slate-200 py-3 rounded-lg">취소</button><button type="submit" class="flex-1 pixel-btn bg-amber-300 py-3 rounded-lg font-bold">확인</button></div>
- </form>
-</div>
+            try {
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
 
-<!-- 퀴즈 접근 비밀번호 확인 모달 -->
-<div id="quiz-access-password-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[89] hidden items-center justify-center p-4" aria-hidden="true">
- <form class="modal-card pixel-box bg-white max-w-sm w-full p-6 rounded-2xl space-y-4 border-amber-400" onsubmit="event.preventDefault();verifyQuizAccessPassword()">
-  <div class="flex justify-between items-center"><h3 class="text-lg font-bold text-amber-900">🔒 퀴즈 접근</h3><button type="button" onclick="closeQuizAccessPasswordModal()" class="pixel-btn bg-slate-200 px-3 py-2 rounded">✕</button></div>
-  <p class="text-sm text-slate-600">이 퀴즈를 확인하려면 비밀번호를 입력하세요.</p>
-  <label class="block text-xs font-bold">비밀번호<input id="quiz-access-password-input" type="password" autocomplete="off" class="mt-1 w-full border-2 border-amber-200 rounded-lg p-3 text-base" placeholder="비밀번호 입력"></label>
-  <p id="quiz-access-password-error" class="hidden text-xs text-rose-600">비밀번호가 올바르지 않습니다.</p>
-  <div class="flex gap-2"><button type="button" onclick="closeQuizAccessPasswordModal()" class="flex-1 pixel-btn bg-slate-200 py-3 rounded-lg">취소</button><button type="submit" class="flex-1 pixel-btn bg-amber-300 py-3 rounded-lg font-bold">확인</button></div>
- </form>
-</div>
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
 
-<!-- 보물 상자 최종 미션 모달 -->
-<div id="final-mission-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[72] hidden items-center justify-center p-4">
- <div class="modal-card pixel-box bg-white max-w-xl w-full p-6 rounded-2xl space-y-4 border-amber-400 max-h-[92vh] overflow-y-auto">
-  <div class="text-center"><div class="text-5xl">🗝️</div><h2 class="text-2xl font-bold text-amber-900">보물 수호자의 최종 시험</h2><p id="final-mission-team" class="text-sm font-bold text-pink-800 mt-1"></p><p id="final-mission-progress" class="text-xs text-slate-600 mt-1"></p></div>
-  <div class="bg-amber-50 border-2 border-amber-200 rounded-xl p-4 space-y-3"><p id="final-mission-question" class="font-bold leading-relaxed"></p><div id="final-mission-options" class="grid grid-cols-1 gap-2"></div></div>
-  <p id="final-mission-feedback" class="text-sm font-bold text-center" aria-live="polite"></p>
-  <button id="final-mission-submit" type="button" onclick="submitFinalMissionAnswer()" disabled class="w-full pixel-btn bg-slate-200 text-slate-400 py-3 rounded-lg font-bold">정답 제출하기</button>
- </div>
-</div>
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        currentUser = user;
+                        banner.classList.add("hidden");
+                        subscribeData();
+                    }
+                });
+            } catch (err) {
+                console.error("Firebase 연결 오류:", err);
+                banner.innerHTML = `<span class="text-xl">❌</span><span>서버 연결 오류: ${err.message}</span>`;
+                banner.classList.replace("bg-yellow-100", "bg-red-100");
+            }
+        }
 
-<!-- 승리 모달 -->
-<div id="victory-modal" class="fixed inset-0 bg-slate-900/80 z-[70] hidden items-center justify-center p-4">
- <div class="modal-card pixel-box bg-white max-w-md w-full p-8 rounded-2xl text-center space-y-5 border-amber-400"><div class="text-7xl animate-bounce">👑</div><h2 class="text-3xl font-bold text-amber-800">탐험 성공!</h2><p id="winner-name-display" class="text-xl font-bold"></p><p class="text-xs text-slate-600">축하합니다! 최종 미션을 통과하고 국어 문법 보물 상자의 주인이 되었습니다!</p><button type="button" onclick="openGameStats()" class="w-full pixel-btn bg-purple-200 py-3 font-bold rounded-xl">📊 게임 결과 및 학습 통계</button><button type="button" id="restart-from-victory-btn" class="w-full pixel-btn bg-amber-300 py-3 font-bold rounded-xl">🎮 게임 다시 하기</button></div>
-</div>
+        function subscribeData() {
+            if (!db || !currentUser) return;
 
-<!-- 게임 결과 및 통계 모달 -->
-<div id="stats-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[75] hidden items-center justify-center p-4">
- <div class="modal-card pixel-box bg-white max-w-2xl w-full p-6 rounded-2xl space-y-4 border-purple-400 max-h-[90vh] overflow-y-auto">
-  <div class="flex justify-between items-center"><h3 class="text-xl font-bold text-purple-900">📊 게임 결과 및 학습 통계</h3><button onclick="closeGameStats()" class="pixel-btn bg-slate-200 px-3 py-2 rounded">✕</button></div>
-  <div id="stats-summary" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
-  <div><h4 class="font-bold text-pink-800 mb-2">🏅 팀별 결과</h4><div id="stats-team-table" class="space-y-2"></div></div>
-  <div><h4 class="font-bold text-pink-800 mb-2">📚 문법 영역별 정답률</h4><div id="stats-category-table" class="space-y-2"></div></div>
-  <div class="flex flex-wrap gap-2"><button onclick="openWrongAnswerReview()" class="flex-1 pixel-btn bg-rose-200 py-3 rounded-lg font-bold">❌ 오답 다시 풀기</button><button onclick="closeGameStats()" class="flex-1 pixel-btn bg-slate-200 py-3 rounded-lg">닫기</button></div>
- </div>
-</div>
+            // 1) 전문어 데이터 실시간 구독
+            const jargonsRef = collection(db, 'artifacts', appId, 'public', 'data', 'jargons');
+            onSnapshot(jargonsRef, (snapshot) => {
+                const items = [];
+                snapshot.forEach(doc => {
+                    items.push({ id: doc.id, ...doc.data() });
+                });
+                items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                allJargons = items;
+                updateFieldFilterOptions();
+                renderWall();
+                updateAvailableQuizInfo();
+            }, (err) => {
+                console.error("전문어 데이터 불러오기 오류:", err);
+            });
 
-<!-- 오답 다시 풀기 모달 -->
-<div id="wrong-review-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[76] hidden items-center justify-center p-4">
- <div class="modal-card pixel-box bg-white max-w-2xl w-full p-6 rounded-2xl space-y-4 border-rose-400 max-h-[90vh] overflow-y-auto">
-  <div class="flex justify-between items-center gap-2"><h3 class="text-xl font-bold text-rose-900">❌ 오답 다시 풀기</h3><button onclick="closeWrongAnswerReview()" class="pixel-btn bg-slate-200 px-3 py-2 rounded">✕</button></div>
-  <p id="wrong-review-summary" class="text-sm text-slate-600"></p>
-  <div id="wrong-review-list" class="space-y-4"></div>
-  <button onclick="closeWrongAnswerReview()" class="w-full pixel-btn bg-slate-200 py-3 rounded-lg">닫기</button>
- </div>
-</div>
+            // 2) 명예의 전당 점수 데이터 실시간 구독
+            const scoresRef = collection(db, 'artifacts', appId, 'public', 'data', 'scores');
+            onSnapshot(scoresRef, (snapshot) => {
+                const scores = [];
+                snapshot.forEach(doc => {
+                    scores.push({ id: doc.id, ...doc.data() });
+                });
+                allScores = scores;
+                renderRank();
+            }, (err) => {
+                console.error("점수 데이터 불러오기 오류:", err);
+            });
+        }
 
-<script>
-/* Firebase 공용 서버 연결
-   1) 아래 firebaseConfig에 Firebase 웹 앱 설정값을 입력합니다.
-   2) Firebase Authentication에서 익명 로그인을 켭니다.
-   3) Cloud Firestore 보안 규칙을 안내문에 제시된 규칙으로 설정합니다.
-   설정값이 비어 있으면 기존처럼 브라우저 로컬 저장으로 작동합니다. */
-const firebaseConfig = {
-  apiKey: "AIzaSyA6efzKdLkuygGzH9BroZ0ORWoG5DwOSwc",
-  authDomain: "game-f9b8a.firebaseapp.com",
-  projectId: "game-f9b8a",
-  storageBucket: "game-f9b8a.firebasestorage.app",
-  messagingSenderId: "418826509824",
-  appId: "1:418826509824:web:eef01b09e14e06291a42e5",
-  measurementId: "G-JT2L1JWVE6"
-};
+        // ==========================================
+        // 4. 이미지 압축 및 복사/붙여넣기(Ctrl+V) 업로드
+        // ==========================================
+        function compressImageToBase64(fileOrBlob, maxWidth = 700, quality = 0.72) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement("canvas");
+                        let width = img.width;
+                        let height = img.height;
 
-// 브라우저별 익명 식별자. Firebase 익명 인증이 연결되면 Firebase UID로 대체됩니다.
-let currentAnonymousUserId = '';
-try {
-  currentAnonymousUserId = localStorage.getItem('korean_grammar_anonymous_uid') || '';
-  if (!currentAnonymousUserId) {
-    currentAnonymousUserId = (crypto.randomUUID ? crypto.randomUUID() : 'anon-' + Date.now() + '-' + Math.random().toString(36).slice(2));
-    localStorage.setItem('korean_grammar_anonymous_uid', currentAnonymousUserId);
-  }
-} catch (e) {
-  currentAnonymousUserId = 'session-' + Math.random().toString(36).slice(2);
-}
-function getCurrentAnonymousUserId() { return currentAnonymousUserId; }
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
 
-function setCloudStatus(message, colorClass) {
-  const el = document.getElementById('cloud-sync-status');
-  if (!el) return;
-  el.textContent = message;
-  el.className = 'text-xs px-2 py-1 rounded-full border ' + (colorClass || 'bg-amber-100 text-amber-900 border-amber-300');
-}
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext("2d");
+                        ctx.fillStyle = "#ffffff";
+                        ctx.fillRect(0, 0, width, height);
+                        ctx.drawImage(img, 0, 0, width, height);
 
-window.quizIdentityReady = (async function initFirebaseSync() {
-  const configured = firebaseConfig.apiKey &&
-    !firebaseConfig.apiKey.startsWith('여기에_') &&
-    firebaseConfig.projectId &&
-    !firebaseConfig.projectId.startsWith('여기에_') &&
-    firebaseConfig.appId &&
-    !firebaseConfig.appId.startsWith('여기에_');
+                        resolve(canvas.toDataURL("image/jpeg", quality));
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(fileOrBlob);
+            });
+        }
 
-  if (!configured) {
-    setCloudStatus('☁️ Firebase 설정 필요', 'bg-amber-100 text-amber-900 border-amber-300');
-    return;
-  }
+        window.selectPasteTarget = function(target) {
+            activePasteTarget = target;
+            const termBadge = document.getElementById("badge-target-term");
+            const meaningBadge = document.getElementById("badge-target-meaning");
+            if (target === "term") {
+                termBadge.classList.remove("hidden");
+                meaningBadge.classList.add("hidden");
+            } else {
+                termBadge.classList.add("hidden");
+                meaningBadge.classList.remove("hidden");
+            }
+        };
 
-  // 다운로드한 HTML을 file://로 직접 열면 브라우저의 보안 정책상
-  // Firebase 모듈을 불러오지 못할 수 있습니다. 이 경우 게임은 로컬 저장으로 실행하고,
-  // 공용 서버 동기화는 웹 호스팅 주소(https://)에서 사용하도록 안내합니다.
-  if (location.protocol === 'file:') {
-    setCloudStatus('💾 로컬 파일 실행 중 · 공용 서버는 웹 주소에서 사용', 'bg-amber-100 text-amber-900 border-amber-300');
-    return;
-  }
+        async function applyImageToSlot(file, target) {
+            try {
+                const compressed = await compressImageToBase64(file);
+                if (target === "term") {
+                    termBase64 = compressed;
+                    const img = document.getElementById("preview-term");
+                    img.src = compressed;
+                    img.classList.remove("hidden");
+                    document.getElementById("placeholder-term").classList.add("hidden");
+                    // 다음 칸으로 자동 전환
+                    if (!meaningBase64) selectPasteTarget("meaning");
+                } else {
+                    meaningBase64 = compressed;
+                    const img = document.getElementById("preview-meaning");
+                    img.src = compressed;
+                    img.classList.remove("hidden");
+                    document.getElementById("placeholder-meaning").classList.add("hidden");
+                }
+                showToast(`${target === "term" ? "전문어" : "전문어의 뜻"} 사진이 입력되었습니다!`, "🖼️");
+            } catch (err) {
+                console.error(err);
+                showToast("이미지를 처리하는 중 오류가 발생했습니다.", "❌");
+            }
+        }
 
-  try {
-    setCloudStatus('☁️ 서버 연결 중…', 'bg-sky-100 text-sky-900 border-sky-300');
+        window.handleFileSelect = function(input, target) {
+            if (input.files && input.files[0]) {
+                applyImageToSlot(input.files[0], target);
+            }
+        };
 
-    const [
-      appSdk, authSdk, firestoreSdk
-    ] = await Promise.all([
-      import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js'),
-      import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js'),
-      import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js')
-    ]);
+        // 전역 붙여넣기(Ctrl+V) 감지
+        window.addEventListener("paste", (e) => {
+            const uploadView = document.getElementById("view-upload");
+            if (uploadView.classList.contains("hidden")) return;
 
-    const { initializeApp } = appSdk;
-    const { getAuth, signInAnonymously } = authSdk;
-    const {
-      getFirestore, collection, doc, setDoc, deleteDoc,
-      onSnapshot, getDocs, writeBatch, runTransaction
-    } = firestoreSdk;
+            const items = (e.clipboardData || e.originalEvent.clipboardData)?.items;
+            if (!items) return;
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const appId = 'korean-grammar-game';
-
-    const credential = await signInAnonymously(auth);
-    currentAnonymousUserId = credential.user.uid;
-    try { localStorage.setItem('korean_grammar_anonymous_uid', currentAnonymousUserId); } catch (_) {}
-   
-    const quizCollection = collection(db, 'artifacts', appId, 'public', 'data', 'quizzes');
-    const errorReportCollection = collection(db, 'artifacts', appId, 'public', 'data', 'quizErrorReports');
-    window.errorReportsReady = new Promise((resolve) => { window.resolveErrorReportsReady = resolve; });
-    window.submitQuizErrorReportToCloud = async (report) => {
-      const reportId = (crypto.randomUUID ? crypto.randomUUID() : 'report-' + Date.now() + '-' + Math.random().toString(36).slice(2));
-      await setDoc(doc(errorReportCollection, reportId), { ...report, reporterUid: currentAnonymousUserId, reportedAt: Date.now() });
-    };
-    window.clearQuizErrorReportsInCloud = async () => {
-      const snapshot = await getDocs(errorReportCollection);
-      const docs = snapshot.docs;
-      for (let i = 0; i < docs.length; i += 450) {
-        const batch = writeBatch(db);
-        docs.slice(i, i + 450).forEach(item => batch.delete(item.ref));
-        await batch.commit();
-      }
-    };
-    onSnapshot(errorReportCollection, (snapshot) => {
-      quizErrorReports = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
-      quizErrorReports.sort((a, b) => Number(b.reportedAt || 0) - Number(a.reportedAt || 0));
-      renderQuizErrorReports();
-      updateQuizErrorReportNotifications();
-      if (window.resolveErrorReportsReady) window.resolveErrorReportsReady();
-    }, (error) => {
-      // 오류 신고 연결 오류는 화면 상단 전역 알림으로 띄우지 않고 콘솔에만 기록합니다.
-      // 신고 건수는 '오류 신고 확인' 버튼의 배지로만 표시합니다.
-      console.error('오류 신고 실시간 수신 실패:', error);
-      if (window.resolveErrorReportsReady) window.resolveErrorReportsReady();
-    });
-    // 현재 공용 퀴즈 컬렉션의 문서 수와 직렬화 기준 추정 용량을 조회합니다.
-    window.getFirebaseStorageReport = async () => {
-      const snapshot = await getDocs(quizCollection);
-      const encoder = new TextEncoder();
-      const rows = [];
-      let totalBytes = 0;
-      snapshot.forEach(item => {
-        const data = { id: item.id, ...item.data() };
-        const bytes = encoder.encode(JSON.stringify(data)).length;
-        totalBytes += bytes;
-        rows.push({ id: item.id, question: data.question || '(문제 내용 없음)', bytes });
-      });
-      rows.sort((a, b) => b.bytes - a.bytes);
-      return { documentCount: snapshot.size, totalBytes, largest: rows.slice(0, 5), checkedAt: Date.now() };
-    };
-    let initialMigrationStarted = false;
-
-    window.addQuizToCloud = async (quiz) => {
-      const payload = { ...quiz, timestamp: Date.now() };
-      await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'quizzes', String(quiz.id)), payload);
-    };
-
-    window.updateQuizInCloud = async (quiz) => {
-      const payload = { ...quiz, timestamp: Date.now() };
-      await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'quizzes', String(quiz.id)), payload);
-    };
-
-    window.deleteQuizFromCloud = async (id) => {
-      await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'quizzes', String(id)));
-    };
-
-    // 오답은 개별 이력 대신 선택지 번호별 누적 횟수만 저장해 문서 크기를 줄입니다.
-    window.recordQuizUsageInCloud = async (quizId, isCorrect, wrongChoiceKey) => {
-      const ref = doc(db, 'artifacts', appId, 'public', 'data', 'quizzes', String(quizId));
-      await runTransaction(db, async (transaction) => {
-        const snapshot = await transaction.get(ref);
-        if (!snapshot.exists()) return;
-        const data = snapshot.data();
-        const current = data.usageStats || {};
-        const compact = compactWrongStats(current, data.options);
-        const wrongCounts = { ...compact.wrongCounts };
-        if (!isCorrect && wrongChoiceKey) wrongCounts[wrongChoiceKey] = Number(wrongCounts[wrongChoiceKey] || 0) + 1;
-        transaction.update(ref, {
-          usageStats: {
-            asked: Number(current.asked || 0) + 1,
-            correct: Number(current.correct || 0) + (isCorrect ? 1 : 0),
-            wrongCounts
-          }
+            for (let item of items) {
+                if (item.type.indexOf("image") !== -1) {
+                    const blob = item.getAsFile();
+                    if (blob) {
+                        e.preventDefault();
+                        applyImageToSlot(blob, activePasteTarget);
+                    }
+                    break;
+                }
+            }
         });
-      });
-    };
 
-    window.resetAllQuizUsageStats = async () => {
-      const snapshots = await getDocs(quizCollection);
-      const batch = writeBatch(db);
-      snapshots.forEach(snapshot => batch.update(snapshot.ref, { usageStats: { asked: 0, correct: 0, wrongCounts: {} } }));
-      await batch.commit();
-    };
+        window.handleUpload = async function(e) {
+            e.preventDefault();
+            if (!db || !currentUser) {
+                showToast("서버에 연결되지 않았습니다. Firebase 설정을 확인해주세요!", "⚠️");
+                return;
+            }
 
-    window.uploadLocalQuizzesToCloud = async (items) => {
-      for (const quiz of items) await window.addQuizToCloud(quiz);
-    };
+            const author = document.getElementById("input-author").value.trim();
+            const field = document.getElementById("input-field").value.trim();
 
-    window.resetQuizCloud = async (items) => {
-      const oldDocs = await getDocs(quizCollection);
-      const batch = writeBatch(db);
-      oldDocs.forEach(snapshot => batch.delete(snapshot.ref));
-      items.forEach(quiz => {
-        const ref = doc(db, 'artifacts', appId, 'public', 'data', 'quizzes', String(quiz.id));
-        batch.set(ref, { ...quiz, timestamp: Date.now() });
-      });
-      await batch.commit();
-    };
+            if (!author || !field) {
+                showToast("이름과 전문 분야를 모두 입력해주세요!", "✏️");
+                return;
+            }
+            if (!termBase64 || !meaningBase64) {
+                showToast("전문어 사진과 뜻 사진을 모두 등록해주세요!", "🖼️");
+                return;
+            }
 
-    onSnapshot(quizCollection, async (snapshot) => {
-      if (snapshot.empty) {
-        // 서버가 처음 만들어진 경우 이 기기에 남아 있는 문제를 최초 1회 서버로 옮깁니다.
-        if (!initialMigrationStarted) {
-          initialMigrationStarted = true;
-          try {
-            const localItems = Array.isArray(quizBank) && quizBank.length
-              ? [...quizBank]
-              : [...DEFAULT_QUIZZES];
-            await window.uploadLocalQuizzesToCloud(localItems);
-            setCloudStatus('☁️ 공용 서버 연결됨', 'bg-emerald-100 text-emerald-900 border-emerald-300');
-          } catch (migrationError) {
-            console.error('기존 퀴즈 서버 이전 실패:', migrationError);
-            setCloudStatus('⚠️ 서버 저장 실패', 'bg-rose-100 text-rose-900 border-rose-300');
-          }
+            const btn = document.getElementById("btn-submit-jargon");
+            btn.disabled = true;
+            btn.textContent = "⏳ 저장하는 중...";
+
+            try {
+                const jargonsRef = collection(db, 'artifacts', appId, 'public', 'data', 'jargons');
+                await addDoc(jargonsRef, {
+                    author,
+                    field,
+                    termImage: termBase64,
+                    meaningImage: meaningBase64,
+                    createdAt: Date.now()
+                });
+
+                // 폼 초기화
+                document.getElementById("upload-form").reset();
+                termBase64 = "";
+                meaningBase64 = "";
+                document.getElementById("preview-term").classList.add("hidden");
+                document.getElementById("placeholder-term").classList.remove("hidden");
+                document.getElementById("preview-meaning").classList.add("hidden");
+                document.getElementById("placeholder-meaning").classList.remove("hidden");
+                selectPasteTarget("term");
+
+                showToast("새로운 전문어가 도감에 등록되었습니다!", "🎉");
+                switchTab("wall");
+            } catch (err) {
+                console.error("업로드 오류:", err);
+                showToast("저장 중 오류가 발생했습니다: " + err.message, "❌");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "💾 도감에 등록하기!";
+            }
+        };
+
+        // ==========================================
+        // 5. 전문어 담벼락 렌더링 & 슬라이드 모달
+        // ==========================================
+        function updateFieldFilterOptions() {
+            const select = document.getElementById("filter-field");
+            const currentVal = select.value;
+            const fields = [...new Set(allJargons.map(item => item.field).filter(Boolean))].sort();
+
+            select.innerHTML = `<option value="ALL">🔍 모든 분야 보기 (${allJargons.length})</option>`;
+            fields.forEach(f => {
+                const count = allJargons.filter(j => j.field === f).length;
+                const opt = document.createElement("option");
+                opt.value = f;
+                opt.textContent = `🏷️ ${f} (${count})`;
+                select.appendChild(opt);
+            });
+
+            if (fields.includes(currentVal) || currentVal === "ALL") {
+                select.value = currentVal;
+            }
         }
-        return;
-      }
 
-      const cloudQuizzes = [];
-      snapshot.forEach(item => cloudQuizzes.push({ id: item.id, ...item.data() }));
-      // 서버에 남아 있는 구형 상세 오답 기록도 선택지별 누적 횟수로 압축해 저장합니다.
-      for (const quiz of cloudQuizzes) {
-        if (Array.isArray(quiz.usageStats?.wrongAnswers)) {
-          quiz.usageStats = compactWrongStats(quiz.usageStats, quiz.options);
-          await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'quizzes', String(quiz.id)), quiz);
-        } else if (quiz.usageStats) {
-          quiz.usageStats = compactWrongStats(quiz.usageStats, quiz.options);
+        window.renderWall = function() {
+            const grid = document.getElementById("wall-grid");
+            const empty = document.getElementById("wall-empty");
+            const badge = document.getElementById("total-count-badge");
+            const selectedField = document.getElementById("filter-field").value;
+
+            filteredJargons = selectedField === "ALL"
+                ? [...allJargons]
+                : allJargons.filter(item => item.field === selectedField);
+
+            badge.textContent = `총 ${filteredJargons.length}개`;
+
+            if (filteredJargons.length === 0) {
+                grid.innerHTML = "";
+                empty.classList.remove("hidden");
+                return;
+            }
+
+            empty.classList.add("hidden");
+            grid.innerHTML = filteredJargons.map((item, idx) => `
+                <div onclick="openModal(${idx})" class="pixel-box p-4 bg-white cursor-pointer hover:-translate-y-1 transition-transform flex flex-col justify-between space-y-3">
+                    <div class="flex items-center justify-between gap-2 border-b-2 border-slate-200 pb-2">
+                        <span class="bg-amber-300 border-2 border-slate-900 px-2 py-0.5 text-xs font-bold truncate max-w-[60%]">
+                            🏷️ ${escapeHtml(item.field)}
+                        </span>
+                        <span class="text-xs font-bold text-slate-600 truncate">
+                            🧑‍🎓 ${escapeHtml(item.author)}
+                        </span>
+                    </div>
+                    <div class="space-y-2">
+                        <div>
+                            <p class="text-xs font-bold text-blue-800 mb-1">📌 전문어</p>
+                            <div class="pixel-img-frame h-28 w-full bg-white p-1">
+                                <img src="${item.termImage}" alt="전문어" class="max-h-full max-w-full object-contain">
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-emerald-800 mb-1">💡 뜻</p>
+                            <div class="pixel-img-frame h-28 w-full bg-white p-1">
+                                <img src="${item.meaningImage}" alt="뜻" class="max-h-full max-w-full object-contain">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center text-xs text-slate-500 pt-1">
+                        🔍 클릭해서 크게 넘겨보기
+                    </div>
+                </div>
+            `).join("");
+        };
+
+        window.openModal = function(index) {
+            if (filteredJargons.length === 0) return;
+            currentModalIndex = index;
+            updateModalContent();
+            document.getElementById("detail-modal").classList.remove("hidden");
+        };
+
+        window.closeModal = function() {
+            document.getElementById("detail-modal").classList.add("hidden");
+        };
+
+        window.navigateModal = function(step) {
+            if (filteredJargons.length === 0) return;
+            currentModalIndex = (currentModalIndex + step + filteredJargons.length) % filteredJargons.length;
+            updateModalContent();
+        };
+
+        function updateModalContent() {
+            const item = filteredJargons[currentModalIndex];
+            if (!item) return;
+            document.getElementById("modal-counter").textContent = `${currentModalIndex + 1} / ${filteredJargons.length}`;
+            document.getElementById("modal-field-badge").textContent = `🏷️ ${item.field}`;
+            document.getElementById("modal-author").textContent = item.author;
+            document.getElementById("modal-term-img").src = item.termImage;
+            document.getElementById("modal-meaning-img").src = item.meaningImage;
         }
-      }
-      cloudQuizzes.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-      quizBank = cloudQuizzes;
-      saveQuizzesToStorage();
-      renderQuizList();
-      setCloudStatus('☁️ 실시간 공유 중', 'bg-emerald-100 text-emerald-900 border-emerald-300');
-    }, (error) => {
-      console.error('Firestore 실시간 수신 오류:', error);
-      setCloudStatus('⚠️ 서버 연결 오류', 'bg-rose-100 text-rose-900 border-rose-300');
-    });
 
-  } catch (error) {
-    console.error('Firebase 초기화 실패:', error);
-    const message = error && error.code === 'auth/operation-not-allowed'
-      ? '⚠️ 익명 로그인 설정 필요'
-      : '⚠️ Firebase 설정 확인 필요';
-    setCloudStatus(message, 'bg-rose-100 text-rose-900 border-rose-300');
-  }
-})();
+        window.addEventListener("keydown", (e) => {
+            const modal = document.getElementById("detail-modal");
+            if (modal.classList.contains("hidden")) return;
+            if (e.key === "ArrowLeft") navigateModal(-1);
+            if (e.key === "ArrowRight") navigateModal(1);
+            if (e.key === "Escape") closeModal();
+        });
 
-const DEFAULT_QUIZZES=[
-{id:1,author:"국어선생님",category:"단어와 형태소",question:"‘뜻을 가진 가장 작은 말의 단위’를 무엇이라고 할까요?",options:["음절","형태소","단어","문장"],answer:1,explanation:"형태소는 더 나누면 뜻을 잃어버리는 뜻을 가진 가장 작은 말의 단위입니다."},
-{id:2,author:"국어선생님",category:"단어와 형태소",question:"홀로 쓸 수 있는 말이나 조사처럼 앞말과 쉽게 분리되는 말의 단위는?",options:["형태소","음운","단어","어근"],answer:2,explanation:"조사는 홀로 쓰이지 않지만 앞말과 쉽게 분리되므로 단어로 인정합니다."},
-{id:3,author:"국어선생님",category:"단어와 형태소",question:"‘하늘이 매우 푸르다’에서 자립 형태소만 모은 것은?",options:["하늘, 매우","이, 푸르-, -다","하늘, 이","매우, 푸르다"],answer:0,explanation:"‘하늘’, ‘매우’는 홀로 쓰일 수 있는 자립 형태소입니다."},
-{id:4,author:"국어선생님",category:"단어와 형태소",question:"형식 형태소가 아닌 것은?",options:["조사","어미","접사","명사"],answer:3,explanation:"명사는 실질적인 의미를 지닌 실질 형태소입니다."},
-{id:5,author:"국어선생님",category:"단어와 형태소",question:"‘아기가 잘 잔다’의 형태소 개수는?",options:["3개","4개","5개","6개"],answer:3,explanation:"아기/가/잘/자-/ㄴ/-다로 총 6개입니다."},
-{id:6,author:"국어선생님",category:"어근과 접사",question:"단어에서 실질적인 의미를 나타내는 중심 부분은?",options:["접사","어근","조사","어미"],answer:1,explanation:"어근은 단어 형성의 중심이 되는 부분입니다."},
-{id:7,author:"국어선생님",category:"어근과 접사",question:"어근에 붙어 뜻을 제한하거나 더해 주는 부분은?",options:["어근","접사","품사","문장 성분"],answer:1,explanation:"접사는 어근의 앞이나 뒤에 붙어 뜻을 더합니다."},
-{id:8,author:"국어선생님",category:"어근과 접사",question:"‘풋사과’에서 ‘풋-’의 명칭과 역할은?",options:["어근, 중심 의미","접사, 익지 않은 뜻 추가","조사, 관계 표시","어미, 문장 끝맺음"],answer:1,explanation:"‘풋-’은 ‘익지 않은’의 뜻을 더하는 접두사입니다."},
-{id:9,author:"국어선생님",category:"어근과 접사",question:"접미사가 붙은 단어는?",options:["맨발","선생님","돌다리","밤낮"],answer:1,explanation:"선생(어근)+-님(접사)으로 이루어졌습니다."},
-{id:10,author:"국어선생님",category:"단어의 종류",question:"하나의 어근으로만 이루어진 단어는?",options:["단일어","파생어","합성어","복합어"],answer:0,explanation:"어근 하나로 이루어진 단어는 단일어입니다."},
-{id:11,author:"국어선생님",category:"단어의 종류",question:"어근과 접사가 결합하여 만들어진 단어는?",options:["단일어","파생어","합성어","어간"],answer:1,explanation:"어근에 접사가 결합한 단어는 파생어입니다."},
-{id:12,author:"국어선생님",category:"단어의 종류",question:"두 개 이상의 어근이 결합하여 만들어진 단어는?",options:["단일어","파생어","합성어","단순어"],answer:2,explanation:"어근과 어근이 결합한 단어는 합성어입니다."},
-{id:13,author:"국어선생님",category:"단어의 종류",question:"다음 중 합성어는?",options:["풋사랑","선생님","손수건","드높다"],answer:2,explanation:"손(어근)+수건(어근)으로 이루어진 합성어입니다."},
-{id:14,author:"국어선생님",category:"단어의 종류",question:"단일어만으로 짝지어진 것은?",options:["구름, 산, 나무","맨손, 돌다리, 하늘","지우개, 덮개, 바다","알뜰하다, 손수건, 바람"],answer:0,explanation:"구름, 산, 나무는 각각 하나의 어근으로 이루어진 단일어입니다."},
-{id:15,author:"국어선생님",category:"단어의 종류",question:"‘멋쟁이’는 어떤 단어인가요?",options:["단일어","파생어","합성어","의존 명사"],answer:1,explanation:"멋(어근)+-쟁이(접사)로 이루어진 파생어입니다."},
-{id:16,author:"국어선생님",category:"단어의 종류",question:"‘눈물’의 단어 짜임으로 알맞은 것은?",options:["어근+접사","접사+어근","어근+어근","접사+접사"],answer:2,explanation:"눈과 물이라는 두 어근이 결합한 합성어입니다."},
-{id:17,author:"국어선생님",category:"단어와 형태소",question:"조사(이, 가, 을, 를)는 단어인가요?",options:["단어가 아니다","단어가 맞다","형태소도 아니다","어근이다"],answer:1,explanation:"조사는 홀로 쓰이지 않지만 앞말과 쉽게 분리되므로 단어입니다."},
-{id:18,author:"국어선생님",category:"어근과 접사",question:"‘덮개’에서 ‘-개’의 성격은?",options:["어근","도구를 뜻하는 접사","어미","격조사"],answer:1,explanation:"‘-개’는 도구나 물건의 뜻을 더하는 접미사입니다."}
-];
+        // ==========================================
+        // 6. 전문어 뜻 맞히기 퀴즈 로직 (15초 제한)
+        // ==========================================
+        window.selectQuizCount = function(cnt) {
+            selectedQuizCount = cnt;
+            ["10", "20", "ALL"].forEach(key => {
+                const btn = document.getElementById(`cnt-${key}`);
+                if (String(cnt) === key) {
+                    btn.classList.remove("btn-white");
+                    btn.classList.add("btn-yellow");
+                } else {
+                    btn.classList.remove("btn-yellow");
+                    btn.classList.add("btn-white");
+                }
+            });
+            updateAvailableQuizInfo();
+        };
 
-let quizBank=[],numPlayers=2,players=[],currentTurnIndex=0,isDiceRolling=false,selectedOptionIndex=null,currentActiveQuiz=null;
-let pendingWrongReviews=[];
-function loadPendingWrongReviews(){try{const saved=JSON.parse(localStorage.getItem('korean_grammar_pending_wrong_reviews')||'[]');pendingWrongReviews=Array.isArray(saved)?saved:[]}catch(e){pendingWrongReviews=[]}}
-function savePendingWrongReviews(){try{localStorage.setItem('korean_grammar_pending_wrong_reviews',JSON.stringify(pendingWrongReviews))}catch(e){console.warn('오답 복습 대기 목록을 저장하지 못했습니다.',e)}}
-let detailQuizId=null,editingQuizId=null,pendingQuizAccessId=null,selectedGameCategory='all',gameFinished=false;
-let currentEventType='normal',timerInterval=null,timerLeft=20,goblinOpponentIndex=null,goblinQuiz=null,thiefQuizPassed=false;
-let preRollPosition=0,goblinTournament=null;
-let diceInterval=null,actionTimeout=null;
-let gameNoticePrimaryAction=null,gameNoticeCancelAction=null,portalArrivalCheckpoint=false;
-let usedQuizIdsThisGame=[],lastSelectedQuizId=null,currentGamePhase='setup',lastQuizResult=null;
-let savedGameSnapshot=null,pendingMoveSteps=null,errorReportTimerPaused=false;
-let finalMissionState=null,finalMissionSelectedIndex=null;
-const FINAL_MISSION_SETTINGS_KEY='korean_grammar_final_mission_settings_v1';
-let finalMissionSettings={count:3,pass:'2',fail:'pass',source:'weak'};
-const GAME_PROGRESS_STORAGE_KEY='korean_grammar_active_game_v1';
-const PLAYER_AVATARS=['🐰','🐣','🐱','🦄'],PLAYER_COLORS=['#e11d48','#2563eb','#059669','#d97706'],PLAYER_NAMES_DEFAULT=['1팀 (토끼)','2팀 (병아리)','3팀 (고양이)','4팀 (유니콘)'];
-const BOARD_TILES_COUNT=31,GOAL_POSITION=30;let boardMap=[];
-const $=id=>document.getElementById(id);
-function showModal(id){
- const el=$(id);
- if(!el){console.error('모달 요소를 찾을 수 없습니다:',id);return}
- el.classList.remove('hidden');
- el.classList.add('flex');
- el.style.display='flex';
- el.setAttribute('aria-hidden','false');
-}
-function hideModal(id){
- const el=$(id);
- if(!el)return;
- el.classList.add('hidden');
- el.classList.remove('flex');
- el.style.display='none';
- el.setAttribute('aria-hidden','true');
-}
-function showGameNotice(title,message,config={}){
- $('game-notice-title').textContent=title||'게임 안내';
- $('game-notice-message').textContent=message||'';
- $('game-notice-icon').textContent=config.icon||'📢';
- $('game-notice-extra').innerHTML=config.extraHtml||'';
- $('game-notice-primary').textContent=config.primaryLabel||'확인';
- $('game-notice-cancel').textContent=config.cancelLabel||'취소';
- $('game-notice-primary').classList.toggle('hidden',config.showPrimary===false);
- $('game-notice-cancel').classList.toggle('hidden',!(config.showCancel===true||typeof config.onCancel==='function'));
- gameNoticePrimaryAction=typeof config.onPrimary==='function'?config.onPrimary:null;
- gameNoticeCancelAction=typeof config.onCancel==='function'?config.onCancel:null;
- if(players.length&&!gameFinished)saveGameProgress(currentGamePhase);
- showModal('game-notice-modal');
-}
-function handleGameNoticePrimary(){
- const action=gameNoticePrimaryAction;gameNoticePrimaryAction=null;gameNoticeCancelAction=null;
- hideModal('game-notice-modal');if(action)action();
-}
-function closeGameNotice(){
- const action=gameNoticeCancelAction;gameNoticePrimaryAction=null;gameNoticeCancelAction=null;
- hideModal('game-notice-modal');if(action)action();
-}
-function switchTab(tab){$('game-tab').classList.toggle('hidden',tab!=='game');$('creator-tab').classList.toggle('hidden',tab!=='creator');if(tab!=='creator'){lockQuizSettings()}}
-function toggleQuizStatusPanel(){const panel=$('quiz-status-panel');if(!panel)return;const opening=panel.classList.contains('hidden');panel.classList.toggle('hidden');if(opening)$('quiz-settings-panel')?.classList.add('hidden')}
-function openSettingsPasswordModal(){const panel=$('quiz-settings-panel');if(panel&&!panel.classList.contains('hidden'))return;const input=$('settings-password-input');const error=$('settings-password-error');if(input)input.value='';if(error)error.classList.add('hidden');showModal('settings-password-modal');if(input)setTimeout(()=>input.focus(),0)}
-function verifySettingsPassword(){const input=$('settings-password-input');const panel=$('quiz-settings-panel');const error=$('settings-password-error');if(!input||!panel)return;if(input.value==='1004#'){hideModal('settings-password-modal');panel.classList.remove('hidden');panel.style.display='block';if(error)error.classList.add('hidden');input.value=''}else{if(error)error.classList.remove('hidden');input.focus();input.select()}}
-function lockQuizSettings(){const panel=$('quiz-settings-panel');if(panel){panel.classList.add('hidden');panel.style.display='none'}hideModal('settings-password-modal');const input=$('settings-password-input');if(input)input.value=''}
-function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
-function clearSavedGameProgress(){
- try{localStorage.removeItem(GAME_PROGRESS_STORAGE_KEY)}catch(e){console.warn('저장된 게임 진행 상황을 삭제하지 못했습니다.',e)}
- savedGameSnapshot=null;
- const panel=$('resume-game-panel');if(panel)panel.classList.add('hidden');
-}
-function saveGameProgress(phase=currentGamePhase){
- if(!players.length||gameFinished){clearSavedGameProgress();return}
- currentGamePhase=phase||currentGamePhase||'turn';
- const snapshot={version:1,savedAt:Date.now(),numPlayers,players,currentTurnIndex,selectedGameCategory,finalMissionState,
-  currentEventType,preRollPosition,portalArrivalCheckpoint,thiefQuizPassed,currentActiveQuiz,selectedOptionIndex,
-  timerLeft,phase:currentGamePhase,usedQuizIdsThisGame,lastSelectedQuizId,lastQuizResult,goblinTournament,pendingMoveSteps};
- try{localStorage.setItem(GAME_PROGRESS_STORAGE_KEY,JSON.stringify(snapshot));savedGameSnapshot=snapshot}
- catch(e){console.warn('게임 진행 상황을 자동 저장하지 못했습니다.',e)}
-}
-function loadSavedGamePrompt(){
- try{
-  const raw=localStorage.getItem(GAME_PROGRESS_STORAGE_KEY);if(!raw)return;
-  const data=JSON.parse(raw);
-  if(!data||!Array.isArray(data.players)||!data.players.length||data.gameFinished)return;
-  savedGameSnapshot=data;
-  const panel=$('resume-game-panel');if(panel){panel.classList.remove('hidden');const names=data.players.map(p=>p.name).join(' · ');$('resume-game-summary').textContent=`${names} · ${data.players[data.currentTurnIndex]?.name||'현재 팀'} 차례에서 이어집니다.`}
- }catch(e){console.warn('저장된 게임 정보를 읽지 못했습니다.',e);clearSavedGameProgress()}
-}
-function discardSavedGame(){clearSavedGameProgress();startBoardGame()}
-function resumeSavedGame(){
- const data=savedGameSnapshot;if(!data){loadSavedGamePrompt();return}
- try{
-  numPlayers=Math.min(4,Math.max(2,Number(data.numPlayers)||data.players.length));players=data.players;
-  currentTurnIndex=Math.min(players.length-1,Math.max(0,Number(data.currentTurnIndex)||0));selectedGameCategory=data.selectedGameCategory||'all';
-  currentEventType=data.currentEventType||'normal';preRollPosition=Number(data.preRollPosition)||0;portalArrivalCheckpoint=!!data.portalArrivalCheckpoint;
-  thiefQuizPassed=!!data.thiefQuizPassed;currentActiveQuiz=data.currentActiveQuiz||null;selectedOptionIndex=data.selectedOptionIndex??null;
-  timerLeft=Math.max(1,Number(data.timerLeft)||20);usedQuizIdsThisGame=Array.isArray(data.usedQuizIdsThisGame)?data.usedQuizIdsThisGame:[];
-  lastSelectedQuizId=data.lastSelectedQuizId??null;lastQuizResult=data.lastQuizResult||null;goblinTournament=data.goblinTournament||null;pendingMoveSteps=data.pendingMoveSteps??null;finalMissionState=data.finalMissionState||null;
-  gameFinished=false;isDiceRolling=false;currentGamePhase=data.phase||'turn';
-  initBoardMap();$('game-category-filter').value=selectedGameCategory;
-  $('game-setup-panel').classList.add('hidden');$('game-setup-panel').style.display='none';$('game-play-panel').classList.remove('hidden');$('game-play-panel').style.display='grid';
-  renderBoard();updateTurnUI();updateScoreboard();$('dice-visual').textContent='🎲';$('roll-btn').disabled=false;
-  $('player-names-input').innerHTML='';for(let i=0;i<numPlayers;i++){const input=document.createElement('input');input.id='player-name-'+i;input.value=players[i]?.name||PLAYER_NAMES_DEFAULT[i];$('player-names-input').appendChild(input)}
-  savedGameSnapshot=null;
-  const phase=currentGamePhase;
-  if(phase==='quiz'&&currentActiveQuiz){openQuizModal(true)}
-  else if(phase==='result'&&lastQuizResult){restoreLastQuizResult()}
-  else if(phase==='arrival'||phase==='portal-arrival'){const p=players[currentTurnIndex];if(p)setTimeout(()=>handleTileEvent(p),250)}
-  else if(phase==='slime-arrival'||phase==='slime-failed'){portalArrivalCheckpoint=false;nextTurn()}
-  else if(phase==='slime-escape'&&pendingMoveSteps){const steps=Number(pendingMoveSteps);setTimeout(()=>movePlayer(currentTurnIndex,steps),250)}
-  else if((phase==='goblin-question'||phase==='goblin-start')&&goblinTournament){openGoblinTournamentQuestion()}
-  else if(phase==='thief-choice'){resolveThiefFairy(players[currentTurnIndex])}
-  else if(phase==='thief-complete'){finishThiefFairyTurn()}
-  else{currentGamePhase='turn';saveGameProgress('turn')}
- }catch(e){console.error('게임 이어하기에 실패했습니다.',e);showGameNotice('이어하기 실패','저장된 진행 상황을 불러오지 못했습니다. 저장된 게임을 삭제하고 새 게임을 시작해 주세요.',{icon:'⚠️',primaryLabel:'확인'})}
-}
-let quizStorageAvailable = true;
-function loadQuizzesFromStorage(){
- try {
-  const raw=window.localStorage ? localStorage.getItem('korean_grammar_quizzes') : null;
-  quizBank=raw?JSON.parse(raw):[...DEFAULT_QUIZZES];
-  if(!Array.isArray(quizBank)) throw new Error('저장된 퀴즈 데이터 형식이 올바르지 않습니다.');
- } catch(e) {
-  console.warn('저장된 퀴즈를 읽지 못해 기본 문제로 시작합니다:',e);
-  quizBank=[...DEFAULT_QUIZZES];
-  quizStorageAvailable=false;
- }
- quizBank=quizBank.map(q=>({...q,usageStats:compactWrongStats(q.usageStats||{asked:0,correct:0},q.options)}));
- saveQuizzesToStorage();
-}
-function saveQuizzesToStorage(){
- try {
-  if(!window.localStorage) throw new Error('브라우저 저장 기능을 사용할 수 없습니다.');
-  localStorage.setItem('korean_grammar_quizzes',JSON.stringify(quizBank));
-  quizStorageAvailable=true;
- } catch(e) {
-  quizStorageAvailable=false;
-  console.warn('브라우저 저장소에 기록하지 못했습니다. 현재 화면에서만 유지됩니다:',e);
-  setCloudStatus('⚠️ 브라우저 저장 제한 · 새로고침 시 초기화될 수 있음','bg-amber-100 text-amber-900 border-amber-300');
- }
- updateQuizBadge();
-}
-function updateQuizBadge(){$('quiz-count-badge').textContent=`${quizBank.length}개 저장됨`;const info=$('active-quiz-info');if(info)info.textContent=`퀴즈 ${quizBank.length}개 장전됨`;if($('game-category-filter'))updateGameCategoryCount()}
-function renderQuizList(){
- const box=$('quiz-list-container');box.innerHTML='';
- if(!quizBank.length){box.innerHTML='<p class="text-center text-slate-400 py-8">등록된 퀴즈가 없습니다.</p>';return}
- quizBank.forEach((q,i)=>{
-  const card=document.createElement('article');
-  card.className='pixel-box-sm bg-pink-50 p-3 rounded-lg text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3';
-  const info=document.createElement('div');info.className='min-w-0 space-y-1';
-  const difficultyLabel=isDefaultQuizItem(q)?'기본 · 20초':`${escapeHtml(q.difficulty||'하')} · ${getQuizTimeLimit(q)}초`;
-   info.innerHTML=`<b class="text-pink-800">문제 ${String(quizBank.length-i).padStart(2,'0')} · ${escapeHtml(q.category||'분야 미지정')}</b><p class="text-slate-600">난이도: <span class="font-bold text-indigo-700">${difficultyLabel}</span> · 출제자: ${escapeHtml(q.author||'익명')}</p>`;
-  const actions=document.createElement('div');actions.className='flex flex-wrap gap-2 shrink-0';
-  const button=document.createElement('button');button.type='button';button.className='pixel-btn bg-emerald-200 px-3 py-2 rounded-lg font-bold';button.textContent='🔎 문제 확인';button.onclick=()=>openQuizDetail(q.id);
-  actions.append(button);card.append(info,actions);box.appendChild(card);
- })
-}
-function openQuizDetail(id){
- const q=quizBank.find(item=>String(item.id)===String(id));if(!q)return;
- const ownerUid=String(q.ownerUid||'');
- const currentUid=getCurrentAnonymousUserId();
- // ownerUid가 없는 구형 문제는 소유자를 확인할 수 없으므로 타인 문제와 동일하게 인증합니다.
- if(!ownerUid || ownerUid!==currentUid){
-  openQuizAccessPasswordModal(q.id);
-  return;
- }
- showQuizDetail(q);
-}
-function openQuizAccessPasswordModal(id){
- pendingQuizAccessId=id;
- const input=$('quiz-access-password-input');
- const error=$('quiz-access-password-error');
- if(input)input.value='';
- if(error)error.classList.add('hidden');
- showModal('quiz-access-password-modal');
- if(input)setTimeout(()=>input.focus(),0);
-}
-function closeQuizAccessPasswordModal(){
- hideModal('quiz-access-password-modal');
- pendingQuizAccessId=null;
- const input=$('quiz-access-password-input');
- const error=$('quiz-access-password-error');
- if(input)input.value='';
- if(error)error.classList.add('hidden');
-}
-function verifyQuizAccessPassword(){
- const input=$('quiz-access-password-input');
- const error=$('quiz-access-password-error');
- if(!input)return;
- if(input.value==='1004#'){
-  const id=pendingQuizAccessId;
-  hideModal('quiz-access-password-modal');
-  pendingQuizAccessId=null;
-  input.value='';
-  if(error)error.classList.add('hidden');
-  const q=quizBank.find(item=>String(item.id)===String(id));
-  if(q)showQuizDetail(q);
- }else{
-  if(error)error.classList.remove('hidden');
-  input.focus();
-  input.select();
- }
-}
-function showQuizDetail(q){
- detailQuizId=q.id;
- $('detail-quiz-meta').textContent=`${q.category||'분야 미지정'} · 난이도: ${isDefaultQuizItem(q)?'기본(20초)':`${q.difficulty||'하'}(${getQuizTimeLimit(q)}초)`} · 출제자: ${q.author||'익명'}`;
- $('detail-quiz-question').textContent=q.question||'';
- const options=$('detail-quiz-options');options.innerHTML='';
- (q.options||[]).forEach((option,index)=>{
-  const item=document.createElement('div');
-  const correct=index===Number(q.answer);
-  item.className='rounded-lg border-2 p-3 '+(correct?'border-emerald-300 bg-emerald-50 font-bold text-emerald-800':'border-slate-200 bg-slate-50');
-  item.textContent=`${index+1}. ${option}${correct?'  ✓ 정답':''}`;options.appendChild(item);
- });
- $('detail-quiz-answer').textContent=`정답: ${Number(q.answer)+1}번`;
- $('detail-quiz-explanation').textContent=q.explanation||'등록된 해설이 없습니다.';
- showModal('quiz-detail-modal');
-}
-function closeQuizDetail(){hideModal('quiz-detail-modal');detailQuizId=null}
-function openQuizEdit(){
- const q=quizBank.find(item=>String(item.id)===String(detailQuizId));if(!q)return;
- editingQuizId=q.id;
- $('edit-quiz-category').value=q.category||'단어와 형태소';$('edit-quiz-difficulty').value=q.difficulty||'하';$('edit-quiz-difficulty').disabled=isDefaultQuizItem(q);$('edit-quiz-difficulty-note').textContent=isDefaultQuizItem(q)?'기본 문제는 난이도 변경이 제한되며 20초로 고정됩니다.':'상 40초 · 중 30초 · 하 20초';$('edit-quiz-question').value=q.question||'';
- $('edit-quiz-option-count').value=String((q.options||[]).length===2?2:4);(q.options||['','','','']).forEach((v,i)=>$('edit-opt-'+i).value=v||'');updateQuizOptionInputs(true);$('edit-quiz-answer').value=String(Number(q.answer)||0);$('edit-quiz-explanation').value=q.explanation||'';
- showModal('quiz-edit-modal');
-}
-function closeQuizEdit(){hideModal('quiz-edit-modal');editingQuizId=null}
-async function saveQuizEdit(){
- const old=quizBank.find(item=>String(item.id)===String(editingQuizId));if(!old)return;
- const question=$('edit-quiz-question').value.trim(),count=Number($('edit-quiz-option-count').value),options=Array.from({length:count},(_,i)=>$('edit-opt-'+i).value.trim()),explanation=$('edit-quiz-explanation').value.trim();
- if(!question||options.some(v=>!v)||!explanation){alert('문제, 선택지, 해설을 모두 입력해 주세요.');return}
- const updated={...old,ownerUid:old.ownerUid||getCurrentAnonymousUserId(),category:$('edit-quiz-category').value,difficulty:isDefaultQuizItem(old)?undefined:$('edit-quiz-difficulty').value,question,options,answer:Number($('edit-quiz-answer').value),explanation};
-  if(isDefaultQuizItem(old))delete updated.difficulty;
- quizBank=quizBank.map(q=>String(q.id)===String(editingQuizId)?updated:q);saveQuizzesToStorage();renderQuizList();closeQuizEdit();closeQuizDetail();
- try{if(window.updateQuizInCloud)await window.updateQuizInCloud(updated);alert('퀴즈를 수정했습니다. 공용 서버에도 반영했습니다.')}catch(e){console.error('퀴즈 수정 서버 반영 실패:',e);alert('이 기기에는 수정 내용을 저장했지만 공용 서버 반영에 실패했습니다. Firebase 연결을 확인해 주세요.')}
-}
-function deleteQuizFromDetail(){if(detailQuizId===null)return;const id=detailQuizId;if(!confirm('이 퀴즈를 삭제할까요? 공용 서버에서도 삭제됩니다.'))return;closeQuizDetail();deleteQuiz(id,true)}
-async function deleteQuiz(id,confirmed=false){if(!confirmed&&!confirm('이 퀴즈를 삭제할까요?'))return;quizBank=quizBank.filter(q=>String(q.id)!==String(id));saveQuizzesToStorage();renderQuizList();try{if(window.deleteQuizFromCloud)await window.deleteQuizFromCloud(id)}catch(e){console.error('퀴즈 서버 삭제 실패:',e);alert('이 컴퓨터에서는 삭제했지만 공용 서버 삭제에는 실패했습니다. 서버 연결을 확인해 주세요.')}}
-async function resetQuizzesToDefault(){if(!confirm('기본 문법 퀴즈 18개로 초기화할까요? 서버에 있는 학급 공용 문제도 모두 기본 문제로 바뀝니다.'))return;quizBank=[...DEFAULT_QUIZZES];saveQuizzesToStorage();renderQuizList();try{if(window.resetQuizCloud)await window.resetQuizCloud(quizBank);else if(window.uploadLocalQuizzesToCloud)await window.uploadLocalQuizzesToCloud(quizBank);alert('기본 문제로 초기화했습니다.')}catch(e){console.error(e);alert('서버 초기화에 실패했습니다. 인터넷 연결과 Firebase 보안 규칙을 확인해 주세요.')}}
-function isDefaultQuizItem(quiz){
- // 기본 문제는 내용이 수정되었더라도 고유 ID(1~18)를 기준으로 제외합니다.
- return DEFAULT_QUIZZES.some(base=>String(base.id)===String(quiz.id));
-}
-function getQuizTimeLimit(quiz){
- // 기본 문제와 난이도 정보가 없는 기존 퀴즈는 기존과 같이 20초를 유지합니다.
- if(!quiz || isDefaultQuizItem(quiz))return 20;
- return ({'상':40,'중':30,'하':20})[quiz.difficulty]||20;
-}
-function exportQuizzes(excludeDefaults=false){
- const items=excludeDefaults?quizBank.filter(q=>!isDefaultQuizItem(q)):quizBank;
- if(!items.length){alert('내보낼 퀴즈가 없습니다.');return}
- const blob=new Blob([JSON.stringify(items,null,2)],{type:'application/json'});
- const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;
- a.download=excludeDefaults?'국어_문법_퀴즈_기본문제제외.json':'국어_문법_퀴즈_전체.json';
- document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
-}
-function compactWrongStats(raw={},options=[]){
- const wrongCounts={...(raw.wrongCounts||{})};
- // 이전 버전의 상세 오답 기록은 선택지 번호별 횟수로 한 번 변환합니다.
- if(Array.isArray(raw.wrongAnswers)){
-  raw.wrongAnswers.forEach(w=>{
-   let key='시간 초과';
-   if(!w.timeout){
-    const chosen=String(w.chosenOption??'');
-    const index=Array.isArray(options)?options.findIndex(option=>String(option)===chosen):-1;
-    key=index>=0?String(index+1):(/^([1-4])$/.test(chosen)?chosen:'기타');
-   }
-   wrongCounts[key]=Number(wrongCounts[key]||0)+1;
-  });
- }
- return {asked:Number(raw.asked||0),correct:Number(raw.correct||0),wrongCounts,wrong:Math.max(0,Number(raw.asked||0)-Number(raw.correct||0)),accuracy:raw.asked?Math.round(Number(raw.correct||0)/Number(raw.asked)*100):0};
-}
-function getQuizUsageStats(quiz){return compactWrongStats(quiz.usageStats||{},quiz.options)}
-function formatStorageBytes(bytes){
- const value=Number(bytes)||0;
- if(value<1024)return value+' B';
- if(value<1024*1024)return (value/1024).toFixed(2)+' KB';
- if(value<1024*1024*1024)return (value/(1024*1024)).toFixed(2)+' MB';
- return (value/(1024*1024*1024)).toFixed(2)+' GB';
-}
-function openFirebaseStorageReport(){
- showModal('firebase-storage-modal');
- refreshFirebaseStorageReport();
-}
-function closeFirebaseStorageReport(){hideModal('firebase-storage-modal')}
-async function refreshFirebaseStorageReport(){
- const status=$('firebase-storage-status'),summary=$('firebase-storage-summary'),largest=$('firebase-storage-largest');
- status.textContent='⏳ Firebase 서버에서 퀴즈 데이터를 조회하고 있습니다…';
- summary.innerHTML='';largest.innerHTML='';
- if(typeof window.getFirebaseStorageReport!=='function'){
-  status.textContent='⚠️ Firebase 서버에 연결되지 않았습니다. HTTPS 웹 주소에서 접속하고 익명 로그인 및 Firestore 연결 상태를 확인해 주세요. 로컬 파일 실행에서는 조회할 수 없습니다.';
-  return;
- }
- try{
-  const report=await window.getFirebaseStorageReport();
-  status.textContent='✅ 조회 완료 · '+new Date(report.checkedAt).toLocaleString('ko-KR');
-  [['저장된 문항',report.documentCount.toLocaleString('ko-KR')+'개'],['추정 데이터 용량',formatStorageBytes(report.totalBytes)],['문항당 평균',formatStorageBytes(report.documentCount?Math.round(report.totalBytes/report.documentCount):0)]].forEach(([label,value])=>{
-   const card=document.createElement('div');card.className='bg-indigo-50 border border-indigo-200 rounded-lg p-3 text-center';
-   const strong=document.createElement('b');strong.className='block text-xl text-indigo-900';strong.textContent=value;
-   const caption=document.createElement('span');caption.className='text-xs text-slate-600';caption.textContent=label;card.append(strong,caption);summary.appendChild(card);
-  });
-  if(!report.largest.length){largest.innerHTML='<p class="text-slate-400">저장된 문항이 없습니다.</p>';return;}
-  report.largest.forEach((item,index)=>{
-   const row=document.createElement('div');row.className='flex justify-between gap-3 bg-slate-50 border rounded-lg p-2';
-   const title=document.createElement('span');title.className='min-w-0';title.textContent=(index+1)+'. '+item.question; 
-   const size=document.createElement('b');size.className='shrink-0 text-indigo-800';size.textContent=formatStorageBytes(item.bytes);
-   row.append(title,size);largest.appendChild(row);
-  });
- }catch(error){
-  console.error('Firebase 용량 조회 실패:',error);
-  status.textContent='❌ 조회에 실패했습니다: '+(error?.message||'알 수 없는 오류')+' · Firestore 보안 규칙과 인터넷 연결을 확인해 주세요.';
- }
-}
+        function updateAvailableQuizInfo() {
+            const nickInput = document.getElementById("quiz-nickname");
+            const nick = nickInput ? nickInput.value.trim() : "";
+            const validPool = allJargons.filter(j => j.author.trim() !== nick);
+            const infoEl = document.getElementById("quiz-available-info");
+            if (infoEl) {
+                infoEl.innerHTML = `전체 <b>${allJargons.length}개</b> 중 내 문제 제외 도전 가능 문항: <b class="text-blue-700">${validPool.length}개</b>`;
+            }
+        }
 
-function loadFinalMissionSettings(){
- try{const saved=JSON.parse(localStorage.getItem(FINAL_MISSION_SETTINGS_KEY)||'null');if(saved)finalMissionSettings={...finalMissionSettings,...saved}}catch(e){console.warn('최종 미션 설정을 불러오지 못했습니다.',e)}
- const ids={'final-mission-count':String(finalMissionSettings.count),'final-mission-pass':String(finalMissionSettings.pass),'final-mission-fail':finalMissionSettings.fail,'final-mission-source':finalMissionSettings.source};
- Object.entries(ids).forEach(([id,value])=>{const el=$(id);if(el)el.value=value});
-}
-function saveFinalMissionSettings(){
- finalMissionSettings={count:$('final-mission-count')?.value||3,pass:$('final-mission-pass')?.value||'2',fail:$('final-mission-fail')?.value||'pass',source:$('final-mission-source')?.value||'weak'};
- try{localStorage.setItem(FINAL_MISSION_SETTINGS_KEY,JSON.stringify(finalMissionSettings))}catch(e){console.warn('최종 미션 설정 저장 실패:',e)}
-}
-function getFinalMissionQuestionCount(){return finalMissionSettings.pass==='4of5'?5:3}
-function getFinalMissionRequiredCorrect(){return finalMissionSettings.pass==='3'?3:finalMissionSettings.pass==='4of5'?4:2}
-function chooseFinalMissionQuizzes(){
- const pool=getGameQuizzes();if(!pool.length)return [];
- const count=getFinalMissionQuestionCount(),source=finalMissionSettings.source;
- const pendingIds=new Set(pendingWrongReviews.map(r=>String(r.quiz?.id??r.quizId??'')));
- const wrongIds=new Set();players.forEach(p=>(p.wrongAnswers||[]).forEach(r=>wrongIds.add(String(r.quiz?.id??r.quizId??''))));
- let ranked=pool.map(q=>{const st=getQuizUsageStats(q);let score=(st.asked?st.wrong/st.asked:0)*4+(pendingIds.has(String(q.id))?3:0)+(wrongIds.has(String(q.id))?2:0);return {q,score}});
- if(source==='weak')ranked.sort((a,b)=>b.score-a.score||Math.random()-.5);
- else if(source==='random')ranked.sort(()=>Math.random()-.5);
- else {
-  ranked.sort(()=>Math.random()-.5);const byCategory=new Map();ranked.forEach(x=>{const c=x.q.category||'기타';if(!byCategory.has(c))byCategory.set(c,[]);byCategory.get(c).push(x)});
-  const chosen=[];while(chosen.length<count&&byCategory.size){for(const [cat,items] of byCategory){if(items.length)chosen.push(items.shift());if(chosen.length>=count)break;if(!items.length)byCategory.delete(cat)}}
-  const used=new Set(chosen.map(x=>String(x.q.id)));ranked=chosen.concat(ranked.filter(x=>!used.has(String(x.q.id))));
- }
- const result=[];for(const item of ranked){if(result.length>=count)break;if(!result.some(q=>String(q.id)===String(item.q.id)))result.push(item.q)}
- while(result.length<count)result.push(pool[result.length%pool.length]);
- return result;
-}
-function beginFinalMission(player){
- if(!player||gameFinished)return;
- if(!finalMissionSettings||!finalMissionSettings.pass)loadFinalMissionSettings();
- const questions=chooseFinalMissionQuizzes();if(!questions.length){showGameNotice('최종 미션 문제 없음','최종 미션에 사용할 문제가 없습니다. 퀴즈를 등록한 뒤 다시 도전해 주세요.',{icon:'📜',primaryLabel:'다음 팀으로',onPrimary:()=>nextTurn()});return}
- finalMissionState={playerId:player.id,questions,step:0,correct:0,required:getFinalMissionRequiredCorrect(),total:getFinalMissionQuestionCount()};
- currentTurnIndex=player.id;currentGamePhase='final-mission';finalMissionSelectedIndex=null;saveGameProgress('final-mission');showFinalMissionQuestion();
-}
-function showFinalMissionQuestion(){
- if(!finalMissionState)return;const p=players.find(x=>x.id===finalMissionState.playerId);if(!p){finalMissionState=null;return}
- const q=finalMissionState.questions[finalMissionState.step];if(!q)return finishFinalMission();
- $('final-mission-team').textContent=`${p.avatar} ${p.name} · 보물 상자 최종 도전`;
- $('final-mission-submit').onclick=submitFinalMissionAnswer;
- $('final-mission-submit').disabled=true;
- $('final-mission-progress').textContent=`${finalMissionState.step+1}/${finalMissionState.total}번째 문제 · 현재 정답 ${finalMissionState.correct}개 / 목표 ${finalMissionState.required}개`;
- $('final-mission-modal').querySelector('h2').textContent=finalMissionSettings.count==='3seal'?'세 개의 문법 봉인 풀기':finalMissionSettings.count==='3duel'?'최후의 문법 결투':'보물 수호자의 최종 시험';
- $('final-mission-question').textContent=q.question||'';$('final-mission-feedback').textContent='';
- const box=$('final-mission-options');box.innerHTML='';finalMissionSelectedIndex=null;
- (q.options||[]).forEach((opt,i)=>{const b=document.createElement('button');b.type='button';b.className='pixel-box-sm bg-white hover:bg-amber-100 p-3 rounded-lg text-left text-sm flex gap-3 items-center';b.innerHTML=`<b class="w-6 h-6 rounded-full bg-amber-50 border border-amber-300 flex items-center justify-center">${i+1}</b><span>${escapeHtml(opt)}</span>`;b.onclick=()=>{finalMissionSelectedIndex=i;Array.from(box.children).forEach((el,j)=>el.classList.toggle('bg-amber-200',j===i));$('final-mission-submit').disabled=false;$('final-mission-submit').className='w-full pixel-btn bg-amber-300 py-3 rounded-lg font-bold'};box.appendChild(b)});
- $('final-mission-submit').disabled=true;$('final-mission-submit').className='w-full pixel-btn bg-slate-200 text-slate-400 py-3 rounded-lg font-bold';$('final-mission-submit').textContent=finalMissionState.step+1===finalMissionState.total?'최종 결과 확인':'다음 문제';showModal('final-mission-modal');saveGameProgress('final-mission');
-}
-function submitFinalMissionAnswer(){
- if(!finalMissionState||finalMissionSelectedIndex===null)return;const p=players.find(x=>x.id===finalMissionState.playerId),q=finalMissionState.questions[finalMissionState.step];if(!p||!q)return;
- const correct=finalMissionSelectedIndex===Number(q.answer);recordQuizAttempt(p,q,correct,finalMissionSelectedIndex,false);recordQuizUsage(q,correct,finalMissionSelectedIndex,p);
- if(correct)finalMissionState.correct++;
- $('final-mission-feedback').textContent=correct?'⭕ 정답입니다!':'❌ 오답입니다. 다음 문제로 넘어갑니다.';$('final-mission-feedback').className='text-sm font-bold text-center '+(correct?'text-emerald-700':'text-rose-700');
- finalMissionState.step++;finalMissionSelectedIndex=null;
- if(finalMissionState.step>=finalMissionState.total){hideModal('final-mission-modal');finishFinalMission();return}
- $('final-mission-submit').disabled=false;$('final-mission-submit').className='w-full pixel-btn bg-amber-300 py-3 rounded-lg font-bold';$('final-mission-submit').textContent='다음 문제';$('final-mission-submit').onclick=showFinalMissionQuestion;
- saveGameProgress('final-mission');
-}
-function finishFinalMission(){
- if(!finalMissionState)return;const state=finalMissionState,p=players.find(x=>x.id===state.playerId);finalMissionState=null;hideModal('final-mission-modal');
- if(!p)return;
- if(state.correct>=state.required){showGameNotice('🏆 최종 미션 성공!',`${p.name} 팀이 ${state.total}문제 중 ${state.correct}문제를 맞혀 최종 미션을 통과했습니다! 보물 상자의 주인이 되었습니다.`,{icon:'👑',primaryLabel:'승리 확인',showCancel:false,onPrimary:()=>triggerVictory(p)});return}
- const message=`${p.name} 팀은 ${state.total}문제 중 ${state.correct}문제를 맞혔습니다. 승리 기준은 ${state.required}문제 정답입니다.`;
- if(finalMissionSettings.fail==='retreat'){p.pos=29;updateAfterMove(p);showGameNotice('최종 미션 실패',message+' 29번 칸으로 후퇴합니다.',{icon:'🔙',primaryLabel:'다음 팀으로',onPrimary:()=>nextTurn()})}
- else if(finalMissionSettings.fail==='retry'){showGameNotice('최종 미션 재도전',message+' 현재 팀이 즉시 다시 도전합니다.',{icon:'🔁',primaryLabel:'다시 도전',showCancel:false,onPrimary:()=>beginFinalMission(p)})}
- else{showGameNotice('최종 미션 실패',message+' 현재 위치에 머무르며 다음 팀에게 차례를 넘깁니다.',{icon:'📘',primaryLabel:'다음 팀으로',onPrimary:()=>nextTurn()})}
- currentGamePhase='turn';saveGameProgress('turn');
-}
+        document.getElementById("quiz-nickname").addEventListener("input", updateAvailableQuizInfo);
 
-function openQuizUsageStats(){
- $('quiz-stats-search').value='';$('quiz-stats-sort').value='accuracy';renderQuizUsageStats();showModal('quiz-usage-stats-modal');
-}
-function closeQuizUsageStats(){hideModal('quiz-usage-stats-modal')}
-function renderQuizUsageStats(){
- const search=($('quiz-stats-search')?.value||'').trim().toLowerCase();
- const sort=$('quiz-stats-sort')?.value||'asked';
- let rows=quizBank.map(q=>({quiz:q,stats:getQuizUsageStats(q)})).filter(x=>!search||[x.quiz.question,x.quiz.author,x.quiz.category].some(v=>String(v||'').toLowerCase().includes(search)));
- rows.sort((a,b)=>sort==='accuracy'?((a.stats.asked?0:1)-(b.stats.asked?0:1)||a.stats.accuracy-b.stats.accuracy||b.stats.asked-a.stats.asked):sort==='wrong'?(b.stats.wrong-a.stats.wrong):sort==='wrongChoice'?(Math.max(0,...Object.values(b.stats.wrongCounts).map(Number))-Math.max(0,...Object.values(a.stats.wrongCounts).map(Number))):b.stats.asked-a.stats.asked);
- const asked=rows.reduce((n,x)=>n+x.stats.asked,0),correct=rows.reduce((n,x)=>n+x.stats.correct,0),wrong=rows.reduce((n,x)=>n+x.stats.wrong,0),accuracy=asked?Math.round(correct/asked*100):0;
- $('quiz-usage-stats-summary').innerHTML='';
- [['등록 문항',quizBank.length+'개'],['누적 출제',asked+'회'],['정답',correct+'회'],['전체 정답률',accuracy+'%']].forEach(([label,value])=>{const el=document.createElement('div');el.className='bg-violet-50 border border-violet-200 rounded-lg p-3 text-center';el.innerHTML=`<b class="block text-xl text-violet-900">${escapeHtml(value)}</b><span class="text-xs text-slate-600">${escapeHtml(label)}</span>`;$('quiz-usage-stats-summary').appendChild(el)});
- const box=$('quiz-usage-stats-list');box.innerHTML='';
- if(!rows.length){box.innerHTML='<p class="text-center text-slate-400 py-8">검색 결과가 없습니다.</p>';return}
- rows.forEach(({quiz,stats},index)=>{
-  const card=document.createElement('article');card.className='border-2 border-violet-100 rounded-xl p-3 space-y-2';
-  const head=document.createElement('div');head.className='flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2';
-  const left=document.createElement('div');left.className='min-w-0';
-  const title=document.createElement('p');title.className='font-bold text-sm text-slate-800';title.textContent=`${index+1}. ${quiz.question}`;
-  const meta=document.createElement('p');meta.className='text-xs text-slate-500 mt-1';meta.textContent=`${quiz.category||'분야 미지정'} · 난이도: ${isDefaultQuizItem(quiz)?'기본(20초)':`${quiz.difficulty||'하'}(${getQuizTimeLimit(quiz)}초)`} · 출제자: ${quiz.author||'익명'}`;left.append(title,meta);
-  const metrics=document.createElement('div');metrics.className='grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs shrink-0';
-  [['출제',stats.asked+'회'],['정답',stats.correct+'회'],['정답률',stats.accuracy+'%'],['오답',stats.wrong+'회']].forEach(([k,v])=>{const m=document.createElement('div');m.className='bg-slate-50 rounded p-2';m.innerHTML=`<b class="block text-sm">${escapeHtml(v)}</b><span class="text-slate-500">${escapeHtml(k)}</span>`;metrics.appendChild(m)});
-  head.append(left,metrics);card.appendChild(head);
-  const optionsPanel=document.createElement('div');optionsPanel.className='mt-2 border-t border-violet-100 pt-2 space-y-1';
-  const optionsTitle=document.createElement('p');optionsTitle.className='text-xs font-bold text-violet-800';optionsTitle.textContent='📝 선지별 누적 오답 횟수';optionsPanel.appendChild(optionsTitle);
-  (quiz.options||[]).slice(0,4).forEach((option,optIndex)=>{
-   const line=document.createElement('div');line.className='grid grid-cols-[minmax(0,1fr)_auto] gap-2 items-start rounded-lg bg-slate-50 px-3 py-2 text-xs';
-   const label=document.createElement('span');label.className='min-w-0 break-words';label.textContent=`${optIndex+1}번. ${option}`;
-   const count=document.createElement('b');
-   if(optIndex===Number(quiz.answer)){
-    count.className='text-emerald-700 whitespace-nowrap';count.textContent='✓ 정답';
-   }else{
-    count.className='text-rose-700 whitespace-nowrap';count.textContent=`${Number(stats.wrongCounts[String(optIndex+1)]||0)}회 오답`;
-   }
-   line.append(label,count);optionsPanel.appendChild(line);
-  });
-  const timeout=document.createElement('p');timeout.className='text-[11px] text-slate-500 text-right';timeout.textContent=`시간 초과 ${Number(stats.wrongCounts['시간 초과']||0)}회 · 기타 ${Number(stats.wrongCounts['기타']||0)}회`;optionsPanel.appendChild(timeout);
-  card.appendChild(optionsPanel);box.appendChild(card);
- });
-}
-function recordQuizUsage(quiz,isCorrect,chosenIndex,player){
- if(!quiz)return;
- const target=quizBank.find(q=>String(q.id)===String(quiz.id));if(!target)return;
- target.usageStats=compactWrongStats(target.usageStats||{},target.options);
- target.usageStats.asked=Number(target.usageStats.asked||0)+1;
- target.usageStats.correct=Number(target.usageStats.correct||0)+(isCorrect?1:0);
- let wrongChoiceKey=null;
- if(!isCorrect){wrongChoiceKey=chosenIndex===-1?'시간 초과':String(chosenIndex+1);target.usageStats.wrongCounts[wrongChoiceKey]=Number(target.usageStats.wrongCounts[wrongChoiceKey]||0)+1}
- saveQuizzesToStorage();
- if(window.recordQuizUsageInCloud){window.recordQuizUsageInCloud(quiz.id,isCorrect,wrongChoiceKey).catch(error=>{console.error('문항별 통계 서버 저장 실패:',error);setCloudStatus('⚠️ 통계 서버 저장 실패','bg-rose-100 text-rose-900 border-rose-300')})}
-}
-function resumeQuizTimerAfterErrorReport(){
- if(!errorReportTimerPaused)return;errorReportTimerPaused=false;
- if(currentGamePhase!=='quiz'||$('quiz-modal')?.classList.contains('hidden'))return;
- if(timerLeft<=0){submitQuizAnswer(true);return}
- $('trap-timer').textContent='⏱️ '+timerLeft+'초';$('trap-timer').classList.remove('hidden');$('trap-timer').classList.add('timer-pulse');
- clearInterval(timerInterval);timerInterval=setInterval(()=>{timerLeft--;$('trap-timer').textContent='⏱️ '+timerLeft+'초';saveGameProgress('quiz');if(timerLeft<=0){clearInterval(timerInterval);$('trap-timer').textContent='⏰ 시간 초과!';submitQuizAnswer(true)}},1000);
-}
-let quizErrorReports=[];
-function updateQuizErrorReportNotifications(){
- const count=quizErrorReports.length;
- const badge=$('quiz-error-report-badge');
- if(badge){badge.textContent=String(count);badge.classList.toggle('hidden',count===0);}
-}
-function renderQuizErrorReports(){
- const list=$('quiz-error-reports-list');if(!list)return;list.innerHTML='';
- if(!quizErrorReports.length){list.innerHTML='<p class="text-sm text-slate-400">접수된 신고가 없습니다.</p>';return;}
- quizErrorReports.forEach((r,i)=>{const card=document.createElement('div');card.className='border rounded-lg p-3 bg-rose-50 text-sm';const title=document.createElement('b');title.textContent=`${quizErrorReports.length-i}. ${r.question||'문제 정보 없음'}`;const detail=document.createElement('p');detail.className='mt-2';detail.textContent='신고 내용: '+(r.detail||'');const meta=document.createElement('p');meta.className='text-xs text-slate-500 mt-1';const date=typeof r.reportedAt==='number'?new Date(r.reportedAt):new Date(r.reportedAt||Date.now());meta.textContent=`출제자: ${r.author||'미상'} · 신고 위치: ${r.stage||'문제 풀이 화면'} · ${date.toLocaleString('ko-KR')}`;card.append(title,detail,meta);list.appendChild(card)});
-}
-function reportCurrentQuizError(stage='문제 풀이 화면'){
- if(!currentActiveQuiz)return;
- const questionId=currentActiveQuiz.id;
- if(!$('quiz-modal')?.classList.contains('hidden')){clearInterval(timerInterval);errorReportTimerPaused=true}
- const extraHtml='<label class="block text-xs font-bold text-rose-900">오류 내용<textarea id="game-error-detail-input" rows="4" class="mt-2 w-full border-2 border-rose-200 rounded-lg p-3 text-sm" placeholder="문제 내용, 선택지, 정답, 해설 중 어떤 부분에 오류가 있는지 적어 주세요."></textarea></label>';
- showGameNotice('🚩 퀴즈 오류 신고','신고 내용은 Firebase에 저장되어 모든 사용자와 공유됩니다.',{icon:'🚩',extraHtml,primaryLabel:'신고 제출',cancelLabel:'취소',onCancel:resumeQuizTimerAfterErrorReport,onPrimary:async()=>{
-  const detail=($('game-error-detail-input')?.value||'').trim();
-  if(!detail){showGameNotice('내용을 입력해 주세요','오류 내용을 적은 뒤 다시 제출해 주세요.',{icon:'🚩',primaryLabel:'다시 입력',onPrimary:()=>reportCurrentQuizError(stage)});return}
-  const report={quizId:questionId,question:currentActiveQuiz?.question||'',author:currentActiveQuiz?.author||'',detail,stage,reportedAt:Date.now()};
-  try{
-   if(!window.submitQuizErrorReportToCloud)throw new Error('Firebase 공용 신고 저장 기능에 연결되지 않았습니다. HTTPS 주소와 Firebase 연결을 확인해 주세요.');
-   await window.submitQuizErrorReportToCloud(report);
-   showGameNotice('✅ 오류 신고 접수','오류 신고가 학급 공용 서버에 등록되었습니다.',{icon:'✅',primaryLabel:'확인',onPrimary:resumeQuizTimerAfterErrorReport});
-  }catch(e){console.error('오류 신고 서버 저장 실패:',e);showGameNotice('신고 저장 실패',e.message||'인터넷 연결과 Firebase 설정을 확인한 뒤 다시 시도해 주세요.',{icon:'⚠️',primaryLabel:'확인',onPrimary:resumeQuizTimerAfterErrorReport})}
- }});
-}
-async function openQuizErrorReports(){
- if(window.errorReportsReady)await window.errorReportsReady;
- renderQuizErrorReports();showModal('quiz-error-reports-modal');
-}
-async function clearQuizErrorReports(){
- if(!confirm('학급 공용 오류 신고 기록을 모두 삭제할까요? 삭제하면 모든 사용자의 목록에서도 사라지며 되돌릴 수 없습니다.'))return;
- try{
-  if(!window.clearQuizErrorReportsInCloud)throw new Error('Firebase 서버에 연결되지 않았습니다.');
-  await window.clearQuizErrorReportsInCloud();
-  quizErrorReports=[];renderQuizErrorReports();updateQuizErrorReportNotifications();alert('학급 공용 오류 신고를 모두 삭제했습니다.');
- }catch(e){console.error('오류 신고 삭제 실패:',e);alert('오류 신고를 서버에서 삭제하지 못했습니다. Firebase 연결과 보안 규칙을 확인해 주세요.');}
-}
-function downloadWrongRateReport(){
- const rows=[['문제','출제자','출제 횟수','정답 횟수','오답 횟수','오답률','1번 오답','2번 오답','3번 오답','4번 오답','시간 초과']];
- quizBank.forEach(q=>{const st=getQuizUsageStats(q);rows.push([q.question,q.author||'',st.asked,st.correct,st.wrong,st.asked?((st.wrong/st.asked)*100).toFixed(1)+'%':'0%',...['1','2','3','4','시간 초과'].map(k=>st.wrongCounts[k]||0)])});
- const csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='국어_문법_퀴즈_오답률.csv';a.click();URL.revokeObjectURL(url);
-}
-async function resetAllWrongRates(){
- if(!confirm('모든 퀴즈의 누적 출제·정답·오답 기록을 0으로 초기화할까요? 이 작업은 되돌릴 수 없습니다.'))return;
- quizBank=quizBank.map(q=>({...q,usageStats:{asked:0,correct:0,wrongCounts:{}}}));saveQuizzesToStorage();renderQuizUsageStats();
- try{if(window.resetAllQuizUsageStats)await window.resetAllQuizUsageStats();alert('이 기기의 오답률 기록을 초기화했습니다.'+(window.resetAllQuizUsageStats?' 공용 서버에도 초기화를 요청했습니다.':' 서버 연결 전이므로 이 기기에만 적용되었습니다.'))}catch(e){console.error(e);alert('이 기기 기록은 초기화했지만 서버 반영에 실패했습니다. 다른 기기에는 이전 통계가 남아 있을 수 있습니다.')}
-}
-function openImportModal(){$('import-json-text').value='';showModal('import-modal')}
-function closeImportModal(){hideModal('import-modal')}
-async function importQuizzesFromJSON(){try{const arr=JSON.parse($('import-json-text').value);if(!Array.isArray(arr))throw Error();let added=[];arr.forEach(q=>{if(q.question&&Array.isArray(q.options)&&[2,4].includes(q.options.length)&&Number.isInteger(Number(q.answer))&&Number(q.answer)>=0&&Number(q.answer)<q.options.length){const item={...q,id:Date.now()+Math.random(),author:q.author||'익명',category:q.category||'단어와 형태소',answer:Number(q.answer),explanation:q.explanation||''};quizBank.unshift(item);added.push(item)}});if(!added.length)throw Error();saveQuizzesToStorage();renderQuizList();closeImportModal();if(window.uploadLocalQuizzesToCloud)await window.uploadLocalQuizzesToCloud(added);alert(`${added.length}개 퀴즈를 추가했습니다.${window.addQuizToCloud?' 공용 서버에 반영했습니다.':' (현재 로컬 저장 상태입니다.)'}`)}catch(e){console.error(e);alert('JSON 형식 또는 퀴즈 항목을 확인해 주세요. 선택지 2개 또는 4개와 해당 범위의 정답 번호가 필요합니다. 서버 저장 실패 여부도 확인해 주세요.')}}
-function updateQuizOptionInputs(isEdit=false){
- const prefix=isEdit?'edit-opt-':'opt-',count=Number($(isEdit?'edit-quiz-option-count':'quiz-option-count').value),answer=$(isEdit?'edit-quiz-answer':'quiz-answer');
- for(let i=0;i<4;i++){const input=$(prefix+i);if(!input)continue;const active=i<count;input.classList.toggle('hidden',!active);input.disabled=!active;input.required=active;if(!active)input.value='';input.placeholder=count===2?(i===0?'O (맞다) 보기':i===1?'X (아니다) 보기':`${i+1}번 보기`):`${i+1}번 보기`;}
- const previous=Number(answer.value)||0;answer.innerHTML='';for(let i=0;i<count;i++){const option=document.createElement('option');option.value=String(i);option.textContent=`${i+1}번`;answer.appendChild(option)}answer.value=String(Math.min(previous,count-1));
-}
-$('quiz-form').addEventListener('submit',async e=>{e.preventDefault();if(window.quizIdentityReady)await window.quizIdentityReady;const count=Number($('quiz-option-count').value),q={id:Date.now(),ownerUid:getCurrentAnonymousUserId(),author:$('quiz-author').value.trim(),category:$('quiz-category').value,difficulty:$('quiz-difficulty').value,question:$('quiz-question').value.trim(),options:Array.from({length:count},(_,i)=>$('opt-'+i).value.trim()),answer:Number($('quiz-answer').value),explanation:$('quiz-explanation').value.trim()};if(!q.author){alert('작성자 이름을 입력해 주세요.');return}quizBank.unshift(q);saveQuizzesToStorage();renderQuizList();try{if(window.addQuizToCloud){await window.addQuizToCloud(q);setCloudStatus('☁️ 실시간 공유 중','bg-emerald-100 text-emerald-900 border-emerald-300')}}catch(err){console.error('퀴즈 서버 저장 실패:',err);setCloudStatus('⚠️ 서버 저장 실패','bg-rose-100 text-rose-900 border-rose-300');alert('문제는 이 컴퓨터에 임시 저장했지만 공용 서버 저장에는 실패했습니다. Firebase 설정과 보안 규칙을 확인해 주세요.')}['quiz-author','quiz-question','opt-0','opt-1','opt-2','opt-3','quiz-explanation'].forEach(id=>$(id).value='');$('quiz-option-count').value='4';updateQuizOptionInputs();playSound('correct')});
-updateQuizOptionInputs();
+        function shuffleArray(arr) {
+            const copy = [...arr];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
 
-function getGameQuizzes(){
- const filtered=selectedGameCategory==='all'?quizBank:quizBank.filter(q=>(q.category||'단어와 형태소')===selectedGameCategory);
- return filtered;
-}
-function chooseNextGameQuiz(){
- const pool=getGameQuizzes();if(!pool.length)return null;
- let candidates=pool.filter(q=>!usedQuizIdsThisGame.includes(String(q.id)));
- // 모든 문제를 한 차례씩 사용한 뒤에만 새 출제 주기를 시작합니다.
- if(!candidates.length){usedQuizIdsThisGame=[];candidates=pool.slice()}
- if(candidates.length>1&&lastSelectedQuizId!==null){const withoutLast=candidates.filter(q=>String(q.id)!==String(lastSelectedQuizId));if(withoutLast.length)candidates=withoutLast}
- const pendingIds=new Set(pendingWrongReviews.map(r=>String(r.quiz?.id??r.quizId??'')));
- const gameWrongIds=new Set();const categoryTotals={};
- players.forEach(player=>{
-  (player.wrongAnswers||[]).forEach(item=>gameWrongIds.add(String(item.quiz?.id??item.quizId??'')));
-  Object.entries(player.categoryStats||{}).forEach(([category,stat])=>{if(!categoryTotals[category])categoryTotals[category]={total:0,correct:0};categoryTotals[category].total+=Number(stat.total)||0;categoryTotals[category].correct+=Number(stat.correct)||0})
- });
- const weights=candidates.map(q=>{
-  const stats=getQuizUsageStats(q);const category=q.category||'분야 미지정';const cat=categoryTotals[category];
-  const priorWrong=stats.asked?stats.wrong/stats.asked:0;
-  const weakness=cat&&cat.total?1-(cat.correct/cat.total):0;
-  let weight=1+Math.min(3,priorWrong*3)+Math.min(2.5,weakness*2.5);
-  if(pendingIds.has(String(q.id))||gameWrongIds.has(String(q.id)))weight+=4.5;
-  if(stats.asked>=3&&stats.accuracy<50)weight+=1.5;
-  return Math.max(.25,weight)
- });
- const total=weights.reduce((a,b)=>a+b,0);let pick=Math.random()*total;
- let chosen=candidates[candidates.length-1];
- for(let i=0;i<candidates.length;i++){pick-=weights[i];if(pick<=0){chosen=candidates[i];break}}
- usedQuizIdsThisGame.push(String(chosen.id));lastSelectedQuizId=String(chosen.id);return chosen;
-}
-function updateGameCategoryCount(){
- const select=$('game-category-filter');if(!select)return;selectedGameCategory=select.value;
- const count=getGameQuizzes().length;$('game-category-count').textContent=selectedGameCategory==='all'?`전체 ${count}개 문제가 출제됩니다.`:`선택 영역의 문제 ${count}개가 출제됩니다.`;
-}
-function setupPlayerSetupInputs(){const box=$('player-names-input');box.innerHTML='';for(let i=2;i<=4;i++)$('pcount-'+i).className='pixel-btn px-4 py-2 rounded-lg font-bold '+(i===numPlayers?'bg-purple-300':'bg-white');for(let i=0;i<numPlayers;i++){const d=document.createElement('label');d.className='text-xs font-bold';d.innerHTML=`${PLAYER_AVATARS[i]} ${i+1}팀 이름<input id="player-name-${i}" value="${PLAYER_NAMES_DEFAULT[i]}" class="mt-1 w-full border border-pink-200 rounded p-2 text-xs">`;box.appendChild(d)}}
-function setPlayerCount(n){numPlayers=n;setupPlayerSetupInputs()}
-function initBoardMap(){
- const traps={5:{kind:'slime',label:'슬라임',icon:'🟢',bg:'bg-green-200 text-green-950'},8:{kind:'bomb',label:'시간 폭탄',icon:'💣',bg:'bg-rose-200 text-rose-950'},14:{kind:'slime',label:'슬라임',icon:'🟢',bg:'bg-green-200 text-green-950'},17:{kind:'goblin',label:'도깨비 소굴',icon:'👹',bg:'bg-purple-200 text-purple-950'},22:{kind:'bomb',label:'시간 폭탄',icon:'💣',bg:'bg-rose-200 text-rose-950'},19:{kind:'thief',label:'도둑 요정',icon:'🧚',bg:'bg-fuchsia-200 text-fuchsia-950'},26:{kind:'goblin',label:'도깨비 소굴',icon:'👹',bg:'bg-purple-200 text-purple-950'},27:{kind:'portal',label:'차원 포털',icon:'🌀',bg:'bg-indigo-200 text-indigo-950'}};
- boardMap=Array.from({length:BOARD_TILES_COUNT},(_,i)=>i===0?{label:'출발선',icon:'🚩',type:'start',bg:'bg-emerald-300'}:i===GOAL_POSITION?{label:'보물 상자',icon:'🏆',type:'goal',bg:'bg-amber-300'}:traps[i]?{...traps[i],type:'trap'}:{label:`문법 퀴즈 #${i}`,icon:'📜',type:'quiz',bg:'bg-pink-100'});
-}
-function startBoardGame(){
- loadPendingWrongReviews();
- if(pendingWrongReviews.length){alert(`아직 다시 풀지 않은 오답이 ${pendingWrongReviews.length}개 있습니다. 다음 게임을 시작하려면 모든 오답을 다시 풀어 정답을 맞혀야 합니다.`);openWrongAnswerReview();return}
- if(!quizBank.length){quizBank=[...DEFAULT_QUIZZES];saveQuizzesToStorage()}
- selectedGameCategory=$('game-category-filter')?.value||'all';const available=getGameQuizzes();
- if(!available.length){alert('선택한 문법 영역에 등록된 문제가 없습니다. 다른 영역을 선택하거나 문제를 먼저 등록해 주세요.');return}
- gameFinished=false;clearSavedGameProgress();usedQuizIdsThisGame=[];lastSelectedQuizId=null;lastQuizResult=null;pendingMoveSteps=null;currentGamePhase='turn';portalArrivalCheckpoint=false;thiefQuizPassed=false;
- players=Array.from({length:numPlayers},(_,i)=>({id:i,eliminated:false,name:$('player-name-'+i).value.trim()||PLAYER_NAMES_DEFAULT[i],avatar:PLAYER_AVATARS[i],color:PLAYER_COLORS[i],pos:0,correctCount:0,wrongCount:0,answeredCount:0,wrongAnswers:[],categoryStats:{},slimeTrapped:false}));
- currentTurnIndex=0;isDiceRolling=false;selectedOptionIndex=null;currentEventType='normal';goblinTournament=null;$('dice-visual').textContent='🎲';$('roll-btn').disabled=false;initBoardMap();$('game-setup-panel').classList.add('hidden');$('game-setup-panel').style.display='none';$('game-play-panel').classList.remove('hidden');$('game-play-panel').style.display='grid';renderBoard();updateTurnUI();updateScoreboard();saveGameProgress('turn')
-}
-function confirmRestartGame(){
- // 확인창에 의존하지 않고 버튼 클릭 즉시 초기화합니다.
- resetGameToSetup();
-}
-function resetGameToSetup(){
- finalMissionState=null;finalMissionSelectedIndex=null;hideModal('final-mission-modal');
- // 진행 중인 모든 비동기 동작을 먼저 중단합니다.
- if(diceInterval!==null){window.clearInterval(diceInterval);diceInterval=null;}
- if(actionTimeout!==null){window.clearTimeout(actionTimeout);actionTimeout=null;}
- if(timerInterval!==null){window.clearInterval(timerInterval);timerInterval=null;}
- isDiceRolling=false;
- players=[];
- currentTurnIndex=0;
- selectedOptionIndex=null;
- currentActiveQuiz=null;
- currentEventType='normal';
- gameFinished=false;currentGamePhase='setup';lastQuizResult=null;pendingMoveSteps=null;usedQuizIdsThisGame=[];lastSelectedQuizId=null;portalArrivalCheckpoint=false;thiefQuizPassed=false;clearSavedGameProgress();
- goblinOpponentIndex=null;
- goblinQuiz=null;
- timerLeft=20;
- // 열려 있는 게임 모달과 타이머를 닫습니다.
- ['quiz-modal','result-modal','goblin-modal','victory-modal','stats-modal','wrong-review-modal','quiz-edit-modal','quiz-error-reports-modal'].forEach(hideModal);
- editingQuizId=null;
- const timer=$('trap-timer');
- if(timer){timer.classList.add('hidden');timer.classList.remove('timer-pulse');timer.textContent='⏱️ 20초';}
- const dice=$('dice-visual');
- if(dice){dice.classList.remove('animate-dice');dice.textContent='🎲';}
- const roll=$('roll-btn');if(roll)roll.disabled=false;
- const score=$('scoreboard');if(score)score.innerHTML='';
- const setup=$('game-setup-panel');
- const play=$('game-play-panel');
- // Tailwind의 hidden/grid 클래스 우선순위에 영향받지 않도록 display도 명시합니다.
- if(play){play.classList.add('hidden');play.style.display='none';}
- if(setup){setup.classList.remove('hidden');setup.style.display='block';}
- // 다음 게임을 위해 팀 선택 및 이름 입력 UI를 초기 상태로 갱신합니다.
- setupPlayerSetupInputs();
- updatePlayerPawnsOnBoard();
-}
-function renderBoard(){const grid=$('board-grid');grid.innerHTML='';boardMap.forEach((t,i)=>{const el=document.createElement('div');el.className=`pixel-board-tile ${t.bg} p-1.5 rounded flex flex-col justify-between items-center text-center`;el.innerHTML=`<div class="w-full flex justify-between text-[10px] font-bold"><span>#${i}</span><span>${t.icon}</span></div><div class="tile-label text-[11px] font-bold my-1">${t.label}</div><div id="tile-pawns-${i}" class="flex flex-wrap gap-1 justify-center min-h-6"></div>`;grid.appendChild(el)});updatePlayerPawnsOnBoard()}
-function updatePlayerPawnsOnBoard(){for(let i=0;i<BOARD_TILES_COUNT;i++){const e=$('tile-pawns-'+i);if(e)e.innerHTML=''}players.forEach(p=>{const e=$('tile-pawns-'+p.pos);if(e){const s=document.createElement('span');s.className='text-base animate-pulse';s.textContent=p.avatar;s.title=p.name;e.appendChild(s)}})}
-function updateTurnUI(){if(!players.length)return;const p=players[currentTurnIndex];$('turn-avatar').textContent=p.avatar;$('turn-name').textContent=p.name;$('turn-name').style.color=p.color;$('turn-pos').textContent=`현재 위치: ${p.pos}번 칸 (${boardMap[p.pos].label})`+(p.slimeTrapped?' · 🟢 슬라임에 붙잡힘':'');$('roll-btn').disabled=isDiceRolling}
-function updateScoreboard(){const box=$('scoreboard');box.innerHTML='';players.forEach((p,i)=>{const d=document.createElement('div');d.className=`p-2 rounded-lg border flex justify-between items-center text-xs ${i===currentTurnIndex?'bg-pink-100 border-pink-400 font-bold':'bg-slate-50 border-slate-200'}`;d.innerHTML=`<span>${p.avatar} <b style="color:${p.color}">${escapeHtml(p.name)}</b> ${i===currentTurnIndex?'👈':''}${p.slimeTrapped?' 🟢':''}</span><span class="text-right"><b>${p.pos}번 칸</b><br><small>정답 ${p.correctCount}개</small></span>`;box.appendChild(d)})}
-function getDiceEmoji(v){return ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣'][v-1]}
-function playSound(type){try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);const now=c.currentTime;o.type=type==='wrong'?'sawtooth':'square';const seq=type==='correct'?[523,659,784]:type==='win'?[440,554,659,880]:type==='wrong'?[200,140]:[300,180];seq.forEach((f,i)=>o.frequency.setValueAtTime(f,now+i*.09));g.gain.setValueAtTime(.08,now);g.gain.exponentialRampToValueAtTime(.001,now+seq.length*.1);o.start(now);o.stop(now+seq.length*.1);setTimeout(()=>c.close(),800)}catch(e){}}
-function rollDice(){
- if(isDiceRolling||!players.length)return;
- // 주사위를 굴리기 시작한 플레이어를 고정해 비동기 처리 중 차례가 바뀌어도
- // 다른 플레이어의 상태를 잘못 처리하지 않도록 합니다.
- const rollingPlayerIndex=currentTurnIndex;
- const rollingPlayer=players[rollingPlayerIndex];
- if(!rollingPlayer)return;
- isDiceRolling=true;$('roll-btn').disabled=true;
- const dice=$('dice-visual');dice.classList.add('animate-dice');playSound('dice');
- // 주사위 값은 굴리기 시작할 때 한 번만 결정합니다. 애니메이션의 마지막 표시와
- // 슬라임 탈출 판정 및 이동 판정이 서로 다른 값이 되는 문제를 방지합니다.
- const rollValue=1+Math.floor(Math.random()*6);
- let n=0;
- diceInterval=setInterval(()=>{
-  dice.textContent=getDiceEmoji(1+Math.floor(Math.random()*6));
-  if(++n>=9){
-   clearInterval(diceInterval);diceInterval=null;dice.classList.remove('animate-dice');
-   dice.textContent=getDiceEmoji(rollValue);
-   actionTimeout=setTimeout(()=>{
-    actionTimeout=null;
-    if(!players.includes(rollingPlayer))return;
-    preRollPosition=rollingPlayer.pos;
-    if(rollingPlayer.slimeTrapped){
-     // 슬라임은 4, 5, 6만 탈출 가능. 1, 2, 3은 반드시 실패 처리합니다.
-     if(rollValue===4||rollValue===5||rollValue===6){
-      rollingPlayer.slimeTrapped=false;pendingMoveSteps=rollValue;currentGamePhase='slime-escape';updateTurnUI();updateScoreboard();saveGameProgress('slime-escape');
-      showGameNotice('🟢 슬라임 탈출 성공!',`주사위 ${rollValue}가 나왔습니다. ${rollValue}칸 이동합니다.`,{icon:'🟢',primaryLabel:'이동하기',onPrimary:()=>movePlayer(rollingPlayerIndex,rollValue)});
-     }else{
-      rollingPlayer.slimeTrapped=true;currentGamePhase='slime-failed';
-      isDiceRolling=false;updateTurnUI();updateScoreboard();saveGameProgress('slime-failed');
-      showGameNotice('🟢 슬라임 탈출 실패!',`주사위 ${rollValue}가 나왔습니다. 4 이상이 나와야 탈출할 수 있습니다. 현재 위치에서 기다립니다.`,{icon:'🟢',primaryLabel:'다음 팀으로',onPrimary:()=>nextTurn()});
-     }
-    }else{
-     movePlayer(rollingPlayerIndex,rollValue);
-    }
-   },350);
-  }
- },80);
-}
-function movePlayer(index,steps){
- const p=players[index];if(!p)return;pendingMoveSteps=null;preRollPosition=p.pos;
- p.pos=Math.max(0,Math.min(GOAL_POSITION,p.pos+steps));
- isDiceRolling=false;
- if(p.pos===GOAL_POSITION){beginFinalMission(p);return}
- currentGamePhase='arrival';updatePlayerPawnsOnBoard();updateTurnUI();updateScoreboard();saveGameProgress('arrival');
- // 도착 칸 이벤트가 실행되기 전 새로고침해도 같은 이벤트를 이어서 처리합니다.
- if(actionTimeout!==null)clearTimeout(actionTimeout);
- actionTimeout=window.setTimeout(()=>{actionTimeout=null;if(players.includes(p))handleTileEvent(p)},450);
-}
-function handleTileEvent(p){
- const tile=boardMap[p.pos];
- if(!tile){console.error('도착 칸 정보를 찾을 수 없습니다:',p.pos);return}
- if(tile.type==='trap'){triggerTrapEvent(p,tile);return}
- currentEventType='normal';
- openQuizModal();
-}
-function triggerTrapEvent(p,tile){
- if(tile.kind==='slime'){
-  p.slimeTrapped=true;currentGamePhase='slime-arrival';updateTurnUI();updateScoreboard();saveGameProgress('slime-arrival');
-  showGameNotice('🟢 끈적끈적 슬라임!', '슬라임에게 붙잡혔습니다. 다음 차례에 주사위 4 이상이 나오면 탈출할 수 있습니다.',{icon:'🟢',primaryLabel:'확인',onPrimary:()=>{portalArrivalCheckpoint=false;nextTurn()}});
-  return;
- }
- if(tile.kind==='goblin'){startGoblinTournament(p);return}
- if(tile.kind==='bomb'){currentEventType='bomb';openQuizModal();return}
- if(tile.kind==='thief'){currentEventType='thief';thiefQuizPassed=false;openQuizModal();return}
- if(tile.kind==='portal'){
-  const from=p.pos;
-  // 포털 칸(#27)으로 다시 이동해 무한 반복되는 상황을 막고, 다른 칸으로 보냅니다.
-  const destinations=Array.from({length:GOAL_POSITION-1},(_,i)=>i+1).filter(pos=>pos!==from&&pos!==27);
-  const dest=destinations[Math.floor(Math.random()*destinations.length)];
-  p.pos=dest;
-  // 목적지 퀴즈를 일부러 틀리거나 시간 초과해도 포털 이동 자체는 취소되지 않도록 기준 위치를 갱신합니다.
-  preRollPosition=dest;portalArrivalCheckpoint=true;currentGamePhase='portal-arrival';updateAfterMove(p);saveGameProgress('portal-arrival');
-  if(dest===GOAL_POSITION){portalArrivalCheckpoint=false;beginFinalMission(p);return}
-  showGameNotice('🌀 차원 포털!',`${from}번 칸에서 ${dest}번 칸으로 이동했습니다. 이동한 칸의 효과도 이어서 적용됩니다.`,{icon:'🌀',primaryLabel:'도착 칸 확인',onPrimary:()=>handleTileEvent(p)});
-  return;
- }
-}
-function updateAfterMove(p){updatePlayerPawnsOnBoard();updateTurnUI();updateScoreboard();saveGameProgress(currentGamePhase)}
-function openQuizModal(resume=false){
- const pool=getGameQuizzes();if(!pool.length){currentGamePhase='turn';saveGameProgress('turn');showGameNotice('📜 출제할 퀴즈가 없습니다.','선택한 영역에 등록된 문제가 없어 이번 차례를 넘깁니다.',{primaryLabel:'다음 팀으로',onPrimary:()=>{currentEventType='normal';portalArrivalCheckpoint=false;nextTurn()}});return}
- if(!resume||!currentActiveQuiz){currentActiveQuiz=chooseNextGameQuiz();selectedOptionIndex=null;timerLeft=goblinTournament?15:(currentEventType==='bomb'?10:getQuizTimeLimit(currentActiveQuiz))}
- currentGamePhase='quiz';
- $('modal-category').textContent=currentEventType==='bomb'?'💣 시간 폭탄 퀴즈':currentEventType==='thief'?'🧚 도둑 요정 퀴즈':currentActiveQuiz.category;
- $('modal-author').textContent=`출제: ${currentActiveQuiz.author}`;$('modal-question').textContent=currentActiveQuiz.question;
- const quizSeconds=goblinTournament?15:(currentEventType==='bomb'?10:getQuizTimeLimit(currentActiveQuiz));$('quiz-heading').textContent=goblinTournament?'[ 도깨비 소굴: 15초 안에 정답을 맞혀라! ]':currentEventType==='bomb'?'[ 시간 폭탄: 10초 안에 정답을 선택하라! ]':`[ ${currentActiveQuiz.difficulty||'기본'} 난이도: ${quizSeconds}초 안에 정답을 선택하라! ]`;
- const box=$('modal-options');box.innerHTML='';(currentActiveQuiz.options||[]).forEach((opt,i)=>{const b=document.createElement('button');b.className='quiz-option pixel-box-sm bg-pink-50 hover:bg-purple-100 p-3 rounded-xl text-left text-sm flex gap-3 items-center';b.innerHTML=`<b class="w-6 h-6 rounded-full bg-white border border-pink-300 flex items-center justify-center">${i+1}</b><span>${escapeHtml(opt)}</span>`;b.onclick=()=>selectQuizOption(i);box.appendChild(b)});
- $('submit-quiz-btn').disabled=true;$('submit-quiz-btn').className='w-full pixel-btn bg-slate-200 text-slate-400 py-3 font-bold rounded-xl';$('submit-quiz-btn').textContent='정답 제출하기';
- if(resume&&selectedOptionIndex!==null&&selectedOptionIndex>=0&&selectedOptionIndex<(currentActiveQuiz.options||[]).length)selectQuizOption(selectedOptionIndex);
- $('trap-timer').classList.add('hidden');clearInterval(timerInterval);
- showModal('quiz-modal');
- console.log('[게임] 퀴즈 모달 열림:',currentActiveQuiz.question);
- $('trap-timer').textContent='⏱️ '+timerLeft+'초';$('trap-timer').classList.remove('hidden');$('trap-timer').classList.add('timer-pulse');clearInterval(timerInterval);timerInterval=setInterval(()=>{timerLeft--;$('trap-timer').textContent='⏱️ '+timerLeft+'초';saveGameProgress('quiz');if(timerLeft<=0){clearInterval(timerInterval);$('trap-timer').textContent='⏰ 시간 초과!';submitQuizAnswer(true)}},1000);saveGameProgress('quiz');
-}
-function selectQuizOption(i){selectedOptionIndex=i;document.querySelectorAll('.quiz-option').forEach((b,j)=>{b.classList.toggle('bg-purple-200',i===j);b.classList.toggle('border-purple-500',i===j)});$('submit-quiz-btn').disabled=false;$('submit-quiz-btn').className='w-full pixel-btn bg-emerald-300 py-3 font-bold rounded-xl';saveGameProgress('quiz')}
-function recordQuizAttempt(player,quiz,correct,chosenIndex,timeout=false){
- if(!player)return;player.answeredCount=(player.answeredCount||0)+1;
- const category=quiz.category||'분야 미지정';if(!player.categoryStats)player.categoryStats={};
- if(!player.categoryStats[category])player.categoryStats[category]={total:0,correct:0};
- player.categoryStats[category].total++;if(correct){player.categoryStats[category].correct++;}
- else{player.wrongCount=(player.wrongCount||0)+1;if(!player.wrongAnswers)player.wrongAnswers=[];const review={reviewId:String(Date.now())+'-'+Math.random().toString(36).slice(2),playerName:player.name,quiz:{...quiz,options:[...(quiz.options||[])]},chosenIndex:timeout?-1:chosenIndex,timeout,reviewed:false};player.wrongAnswers.push(review);pendingWrongReviews.push(review);savePendingWrongReviews();}
-}
-function submitQuizAnswer(timeout=false){
- if(!timeout&&selectedOptionIndex===null)return;if(!currentActiveQuiz)return;clearInterval(timerInterval);$('trap-timer').classList.add('hidden');hideModal('quiz-modal');
- const correct=!timeout&&selectedOptionIndex===Number(currentActiveQuiz.answer),p=players[currentTurnIndex];if(currentEventType==='thief')thiefQuizPassed=correct;recordQuizAttempt(p,currentActiveQuiz,correct,selectedOptionIndex,timeout);recordQuizUsage(currentActiveQuiz,correct,timeout?-1:selectedOptionIndex,p);$('result-explanation').textContent=currentActiveQuiz.explanation||'해설이 등록되지 않았습니다.';
- if(goblinTournament){handleGoblinTournamentAnswer(correct,timeout);return}
- currentGamePhase='result';
- if(correct){p.correctCount++;playSound('correct');$('result-icon').textContent='⭕';$('result-title').textContent='정답입니다!';$('result-title').className='text-2xl font-bold text-emerald-600';
-  if(currentEventType==='bomb')$('result-action-msg').textContent='💣 폭탄 해체 성공! 무사히 통과합니다!'
-  else if(currentEventType==='thief')$('result-action-msg').textContent='🧚 정답입니다! 다음 화면에서 위치를 바꿀 상대를 선택할 수 있습니다.'
-  else $('result-action-msg').textContent='👏 정답입니다! 현재 위치를 유지합니다.'
- }else{playSound('wrong');$('result-icon').textContent=timeout?'💥':'❌';$('result-title').textContent=timeout?'시간 초과!':'아쉽게도 오답입니다!';$('result-title').className='text-2xl font-bold text-rose-600';
-  if(currentEventType==='bomb'){$('result-action-msg').textContent=portalArrivalCheckpoint?'💥 폭탄이 터졌습니다. 차원 포털로 이동한 위치에서 유지합니다.':'💥 폭탄이 터졌습니다. 주사위 굴리기 전 자리로 돌아갑니다.'}
-  else if(portalArrivalCheckpoint){$('result-action-msg').textContent='⚠️ 오답입니다. 차원 포털로 이동한 위치는 유지됩니다.'}
-  else{$('result-action-msg').textContent='⚠️ 오답입니다. 주사위 굴리기 전 자리로 돌아갑니다.'}
-  p.pos=preRollPosition;
- }
- lastQuizResult={icon:$('result-icon').textContent,title:$('result-title').textContent,titleClass:$('result-title').className,explanation:$('result-explanation').textContent,actionMsg:$('result-action-msg').textContent};
- updateAfterMove(p);saveGameProgress('result');showModal('result-modal')
-}
-function restoreLastQuizResult(){
- if(!lastQuizResult)return;
- $('result-icon').textContent=lastQuizResult.icon||'📘';$('result-title').textContent=lastQuizResult.title||'';$('result-title').className=lastQuizResult.titleClass||'text-2xl font-bold';$('result-explanation').textContent=lastQuizResult.explanation||'';$('result-action-msg').textContent=lastQuizResult.actionMsg||'';
- currentGamePhase='result';showModal('result-modal');
-}
-function closeResultModal(){hideModal('result-modal');lastQuizResult=null;const p=players[currentTurnIndex];if(p.pos>=GOAL_POSITION){portalArrivalCheckpoint=false;beginFinalMission(p);return}if(currentEventType==='thief'&&thiefQuizPassed){thiefQuizPassed=false;currentGamePhase='thief-choice';saveGameProgress('thief-choice');resolveThiefFairy(p);return}currentEventType='normal';thiefQuizPassed=false;portalArrivalCheckpoint=false;nextTurn()}
-function finishThiefFairyTurn(){currentEventType='normal';thiefQuizPassed=false;portalArrivalCheckpoint=false;nextTurn()}
-function resolveThiefFairy(player){
- currentGamePhase='thief-choice';saveGameProgress('thief-choice');
- const others=players.filter(other=>other!==player&&!other.eliminated);
- if(!others.length){
-  showGameNotice('🧚 도둑 요정', '위치를 바꿀 수 있는 다른 플레이어가 없습니다. 현재 위치를 유지합니다.',{icon:'🧚',primaryLabel:'다음 팀으로',onPrimary:finishThiefFairyTurn});
-  return;
- }
- const options=others.map(other=>`<option value="${other.id}">${escapeHtml(other.avatar)} ${escapeHtml(other.name)} (${other.pos}번 칸)</option>`).join('');
- const extraHtml=`<label class="block text-sm font-bold text-fuchsia-900">위치를 바꿀 상대 선택<select id="thief-target-select" class="mt-2 w-full border-2 border-fuchsia-300 rounded-lg p-3 bg-white">${options}</select></label>`;
- showGameNotice('🧚 도둑 요정의 마법!', '위치를 바꿀 상대를 선택하세요. 취소하면 위치를 바꾸지 않습니다.',{icon:'🧚',extraHtml,primaryLabel:'상대 선택',cancelLabel:'교환 안 함',onPrimary:()=>{
-  const targetId=Number($('thief-target-select')?.value);
-  const target=others.find(other=>other.id===targetId);
-  if(!target){showGameNotice('선택을 확인해 주세요','위치를 바꿀 상대를 다시 선택해 주세요.',{icon:'🧚',primaryLabel:'다시 선택',onPrimary:()=>resolveThiefFairy(player)});return}
-  showGameNotice('🧚 위치 교환 확인',`${player.name}(${player.pos}번 칸)와 ${target.name}(${target.pos}번 칸)의 위치를 서로 바꿀까요?`,{icon:'🧚',primaryLabel:'위치 바꾸기',cancelLabel:'취소',onPrimary:()=>{
-   const old=player.pos;player.pos=target.pos;target.pos=old;currentGamePhase='thief-complete';updateAfterMove(player);saveGameProgress('thief-complete');
-   showGameNotice('🧚 위치 교환 완료!',`${player.name}과(와) ${target.name}의 말이 자리를 바꿨습니다.`,{icon:'🧚',primaryLabel:'다음 팀으로',showCancel:false,onPrimary:finishThiefFairyTurn});
-  },onCancel:finishThiefFairyTurn});
- },onCancel:finishThiefFairyTurn});
-}
-function startGoblinTournament(firstPlayer){
- currentGamePhase='goblin-start';
- const alive=players.filter(p=>!p.eliminated);
- if(alive.length<2){firstPlayer.pos=GOAL_POSITION;beginFinalMission(firstPlayer);return}
- goblinTournament={challengerId:firstPlayer.id,tilePosition:firstPlayer.pos,originPosition:preRollPosition,aliveIds:alive.map(p=>p.id),round:1};
- currentTurnIndex=firstPlayer.id;
- showGameNotice('👹 도깨비의 최후 대결!', '모든 팀이 차례로 문제를 풉니다. 틀리거나 15초 안에 답하지 못하면 탈락하며, 마지막 한 팀만 살아남습니다.',{icon:'👹',primaryLabel:'대결 시작',onPrimary:()=>openGoblinTournamentQuestion()});
-}
-function openGoblinTournamentQuestion(){
- if(!goblinTournament)return;
- const alive=goblinTournament.aliveIds.map(id=>players[id]).filter(Boolean);
- if(alive.length===1){finishGoblinTournament(alive[0]);return}
- const next=players[currentTurnIndex];if(!next||next.eliminated){advanceGoblinTurn();return}
- currentEventType='goblin';openQuizModal();
- $('modal-category').textContent='👹 도깨비 최후의 대결';
- $('quiz-heading').textContent=`[ ${next.name} 차례 · 틀리면 즉시 탈락 ]`;
-}
-function handleGoblinTournamentAnswer(correct,timeout=false){
- const player=players[currentTurnIndex];
- if(correct){player.correctCount++;playSound('correct');goblinTournament.round++;$('result-icon').textContent='⭕';$('result-title').textContent='생존 성공!';$('result-title').className='text-2xl font-bold text-emerald-600';$('result-action-msg').textContent=`${player.name}, 다음 라운드에 진출합니다.`;updateAfterMove(player);hideModal('result-modal');advanceGoblinTurn();return}
- player.eliminated=true;playSound('wrong');
- $('result-icon').textContent='👻';$('result-title').textContent='탈락!';$('result-title').className='text-2xl font-bold text-rose-600';$('result-explanation').textContent=currentActiveQuiz.explanation||'해설이 등록되지 않았습니다.';$('result-action-msg').textContent=`${player.name} 탈락!`;hideModal('result-modal');advanceGoblinTurn();
-}
-function advanceGoblinTurn(){
- if(!goblinTournament)return;
- const alive=goblinTournament.aliveIds.map(id=>players[id]).filter(p=>p&&!p.eliminated);
- goblinTournament.aliveIds=alive.map(p=>p.id);
- if(alive.length<=1){finishGoblinTournament(alive[0]);return}
- let idx=currentTurnIndex,tries=0;do{idx=(idx+1)%players.length;tries++}while((players[idx]?.eliminated||!goblinTournament.aliveIds.includes(idx))&&tries<=players.length);
- currentTurnIndex=idx;updateTurnUI();updateScoreboard();openGoblinTournamentQuestion();
-}
-function finishGoblinTournament(winner){
- if(!winner)return;
- const challenger=players[goblinTournament.challengerId];
- players.forEach(p=>p.eliminated=false);
- let noticeMessage='';
- if(winner.id===challenger.id){winner.pos=goblinTournament.tilePosition;noticeMessage=`${winner.name}이(가) 최후의 1인! 도깨비 소굴을 차지했습니다.`}
- else{challenger.pos=goblinTournament.originPosition;winner.pos=Math.min(GOAL_POSITION,winner.pos+1);noticeMessage=`${winner.name}이(가) 최후의 1인입니다! 도깨비 칸에 먼저 도착했던 ${challenger.name}은(는) 진입하지 못하고, 최후의 1인은 퀴즈 없이 1칸 전진합니다.`}
- goblinTournament=null;currentEventType='normal';updateAfterMove(winner);
- showGameNotice('👹 도깨비 대결 결과',noticeMessage,{icon:'👹',primaryLabel:winner.pos>=GOAL_POSITION?'승리 확인':'다음 팀으로',onPrimary:()=>{portalArrivalCheckpoint=false;if(winner.pos>=GOAL_POSITION)beginFinalMission(winner);else{currentTurnIndex=winner.id;nextTurn()}}});
-}
-function openGoblinDuel(){const p=players[currentTurnIndex];startGoblinTournament(p)}
-function finishGoblinDuel(){ }
-function cancelGoblinDuel(){goblinTournament=null;hideModal('goblin-modal');nextTurn()}
-function nextTurn(){
- // 차례가 넘어갈 때 주사위 진행 상태를 반드시 해제합니다.
- // 특히 슬라임 탈출 실패(1~3) 경로에서는 movePlayer()를 거치지 않으므로
- // isDiceRolling이 true로 남아 다음 팀의 주사위 버튼이 잠기는 문제가 있었습니다.
- if(goblinTournament){isDiceRolling=false;advanceGoblinTurn();return}
- isDiceRolling=false;
- if(!players.length)return;
- let tries=0;
- do{currentTurnIndex=(currentTurnIndex+1)%players.length;tries++}
- while(players[currentTurnIndex]?.eliminated&&tries<=players.length);
- updateTurnUI();
- updateScoreboard();currentGamePhase='turn';saveGameProgress('turn');
-}
-function triggerVictory(p){if(gameFinished)return;gameFinished=true;clearSavedGameProgress();isDiceRolling=false;clearInterval(timerInterval);playSound('win');$('winner-name-display').textContent=`${p.avatar} ${p.name} 승리!`;showModal('victory-modal')}
-function openGameStats(){
- const totalAnswered=players.reduce((sum,p)=>sum+(p.answeredCount||0),0),totalCorrect=players.reduce((sum,p)=>sum+(p.correctCount||0),0),totalWrong=players.reduce((sum,p)=>sum+(p.wrongCount||0),0);
- const allWrong=players.reduce((sum,p)=>sum+(p.wrongAnswers||[]).length,0),accuracy=totalAnswered?Math.round(totalCorrect/totalAnswered*100):0;
- const summary=$('stats-summary');summary.innerHTML='';
- [["풀이한 문제",totalAnswered],["정답",totalCorrect],["오답",totalWrong],["전체 정답률",accuracy+'%']].forEach(([label,value])=>{const card=document.createElement('div');card.className='bg-purple-50 border border-purple-200 rounded-lg p-3 text-center';const b=document.createElement('b');b.className='block text-xl text-purple-900';b.textContent=value;const small=document.createElement('span');small.className='text-xs text-slate-600';small.textContent=label;card.append(b,small);summary.appendChild(card)});
- const teamBox=$('stats-team-table');teamBox.innerHTML='';
- players.forEach(p=>{const pct=p.answeredCount?Math.round(p.correctCount/p.answeredCount*100):0;const row=document.createElement('div');row.className='border rounded-lg p-3 bg-white';const top=document.createElement('div');top.className='flex justify-between text-sm font-bold';const name=document.createElement('span');name.textContent=`${p.avatar} ${p.name}`;const score=document.createElement('span');score.textContent=`${p.correctCount}/${p.answeredCount} 정답 (${pct}%)`;top.append(name,score);const detail=document.createElement('p');detail.className='text-xs text-slate-500 mt-1';detail.textContent=`현재 위치 ${p.pos}번 칸 · 오답 ${p.wrongCount||0}개`;row.append(top,detail);teamBox.appendChild(row)});
- const cats={};players.forEach(p=>Object.entries(p.categoryStats||{}).forEach(([name,v])=>{if(!cats[name])cats[name]={total:0,correct:0};cats[name].total+=v.total;cats[name].correct+=v.correct}));
- const catBox=$('stats-category-table');catBox.innerHTML='';const catNames=Object.keys(cats);
- if(!catNames.length){catBox.innerHTML='<p class="text-sm text-slate-500">아직 기록된 퀴즈 풀이가 없습니다.</p>'}else catNames.forEach(name=>{const v=cats[name],pct=v.total?Math.round(v.correct/v.total*100):0;const row=document.createElement('div');row.className='space-y-1';const line=document.createElement('div');line.className='flex justify-between text-xs';const label=document.createElement('b');label.textContent=name;const value=document.createElement('span');value.textContent=`${v.correct}/${v.total} (${pct}%)`;line.append(label,value);const bar=document.createElement('div');bar.className='h-3 bg-slate-100 rounded-full overflow-hidden';const fill=document.createElement('div');fill.className='h-full bg-emerald-400';fill.style.width=pct+'%';bar.appendChild(fill);row.append(line,bar);catBox.appendChild(row)});
- const reviewBtn=document.querySelector('#stats-modal button[onclick="openWrongAnswerReview()"]');if(reviewBtn){reviewBtn.disabled=allWrong===0;reviewBtn.classList.toggle('opacity-50',allWrong===0);reviewBtn.textContent=allWrong?`❌ 오답 다시 풀기 (${allWrong}개)`:'❌ 다시 풀 오답이 없습니다'}
- showModal('stats-modal');
-}
-function closeGameStats(){hideModal('stats-modal')}
-function openWrongAnswerReview(){
- loadPendingWrongReviews();
- const items=pendingWrongReviews.slice();
- const box=$('wrong-review-list');box.innerHTML='';
- $('wrong-review-summary').textContent=items.length?`아직 해결하지 않은 오답이 ${items.length}개 있습니다. 모든 문제를 다시 풀어 정답을 맞혀야 다음 게임을 시작할 수 있습니다.`:'모든 오답을 해결했습니다! 다음 게임을 시작할 수 있습니다.';
- if(!items.length){const empty=document.createElement('p');empty.className='text-sm text-emerald-700 bg-emerald-50 p-3 rounded';empty.textContent='🎉 모든 오답 복습을 완료했습니다!';box.appendChild(empty)}
- items.forEach((entry,idx)=>{
-  const q=entry.quiz,card=document.createElement('article');card.className='border-2 border-rose-200 rounded-xl p-4 space-y-3 bg-rose-50';
-  const meta=document.createElement('p');meta.className='text-xs text-rose-700 font-bold';meta.textContent=`${idx+1}. ${entry.playerName||'참가 팀'} · ${q.category||'분야 미지정'}`;
-  const question=document.createElement('p');question.className='font-bold text-sm';question.textContent=q.question||'';
-  const options=document.createElement('div');options.className='grid grid-cols-1 gap-2';
-  const feedback=document.createElement('div');feedback.className='hidden rounded-lg p-3 text-sm';
-  (q.options||[]).forEach((opt,optIndex)=>{const btn=document.createElement('button');btn.type='button';btn.className='pixel-btn bg-white text-left p-3 rounded-lg text-sm';btn.textContent=`${optIndex+1}. ${opt}`;btn.addEventListener('click',()=>{
-    if(btn.dataset.locked==='1')return;
-    const correct=optIndex===Number(q.answer);
-    if(correct){
-     Array.from(options.children).forEach(b=>{b.disabled=true;b.dataset.locked='1'});
-     pendingWrongReviews=pendingWrongReviews.filter(item=>item.reviewId!==entry.reviewId);savePendingWrongReviews();
-     btn.classList.add('bg-emerald-200');feedback.className='rounded-lg p-3 text-sm bg-emerald-100 text-emerald-800';feedback.textContent='⭕ 복습 성공! 이 오답은 해결되었습니다. '+(q.explanation||'');
-     const remaining=pendingWrongReviews.length;$('wrong-review-summary').textContent=remaining?`잘했습니다! 아직 해결하지 않은 오답이 ${remaining}개 남았습니다.`:'🎉 모든 오답 복습을 완료했습니다! 이제 다음 게임을 시작할 수 있습니다.';
-    }else{
-     btn.classList.add('bg-rose-200');feedback.className='rounded-lg p-3 text-sm bg-amber-100 text-amber-900';feedback.textContent='❌ 아직 정답이 아닙니다. 다시 생각해 보세요.';
-    }
-  });options.appendChild(btn)});
-  const hint=document.createElement('p');hint.className='text-xs text-slate-500';hint.textContent='정답을 맞혀야 복습 완료로 처리됩니다.';
-  card.append(meta,question,options,feedback,hint);box.appendChild(card);
- });
- hideModal('stats-modal');showModal('wrong-review-modal');
-}
-function closeWrongAnswerReview(){hideModal('wrong-review-modal');if(players.length)showModal('stats-modal')}
-function restartGameFromVictory(){resetGameToSetup()}
-function initializeGamePage(){
- loadFinalMissionSettings();
- loadPendingWrongReviews();
- try{loadSavedGamePrompt()}catch(e){console.warn('이어하기 버튼 초기화 실패:',e)}
- try { loadQuizzesFromStorage(); } catch(e) { console.error('퀴즈 초기화 오류:',e); quizBank=[...DEFAULT_QUIZZES]; }
- try { renderQuizList(); } catch(e) { console.error('퀴즈 목록 표시 오류:',e); }
- try { setupPlayerSetupInputs(); } catch(e) { console.error('플레이어 설정 초기화 오류:',e); }
- try { initBoardMap(); } catch(e) { console.error('보드판 초기화 오류:',e); }
- const categorySelect=$('game-category-filter');
- if(categorySelect){categorySelect.addEventListener('change',updateGameCategoryCount);try{updateGameCategoryCount()}catch(e){console.error('문법 영역 문제 수 표시 오류:',e)}}
- const restartBtn=$('restart-game-btn');if(restartBtn)restartBtn.addEventListener('click',resetGameToSetup);
- const victoryRestartBtn=$('restart-from-victory-btn');if(victoryRestartBtn)victoryRestartBtn.addEventListener('click',resetGameToSetup);
-}
-if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initializeGamePage,{once:true});
-else initializeGamePage();
-</script>
+        window.startQuiz = function() {
+            const nickname = document.getElementById("quiz-nickname").value.trim();
+            if (!nickname) {
+                showToast("도전자 이름(닉네임)을 먼저 입력해주세요!", "🧑‍🎓");
+                return;
+            }
+
+            if (allJargons.length < 4) {
+                showToast("4지선다 퀴즈를 만들려면 전체 전문어가 최소 4개 이상 등록되어 있어야 해요!", "⚠️");
+                return;
+            }
+
+            const pool = allJargons.filter(j => j.author.trim() !== nickname);
+            if (pool.length === 0) {
+                showToast("내가 낸 문제를 제외하면 풀 수 있는 문제가 없어요! 친구들이 등록할 때까지 기다려주세요.", "😅");
+                return;
+            }
+
+            const shuffled = shuffleArray(pool);
+            if (selectedQuizCount === "ALL") {
+                quizQuestions = shuffled;
+            } else {
+                quizQuestions = shuffled.slice(0, Math.min(selectedQuizCount, shuffled.length));
+            }
+
+            quizPlayerName = nickname;
+            currentQuestionIdx = 0;
+            quizScore = 0;
+
+            document.getElementById("quiz-setup").classList.add("hidden");
+            document.getElementById("quiz-result").classList.add("hidden");
+            document.getElementById("quiz-play").classList.remove("hidden");
+            document.getElementById("quiz-player-tag").textContent = `도전자: ${quizPlayerName}`;
+
+            renderQuestion();
+        };
+
+        function renderQuestion() {
+            clearInterval(questionTimer);
+            isQuestionAnswered = false;
+
+            const q = quizQuestions[currentQuestionIdx];
+            document.getElementById("quiz-progress-text").textContent = `${currentQuestionIdx + 1} / ${quizQuestions.length}`;
+            document.getElementById("quiz-score-tag").textContent = `현재 점수: ${quizScore}점`;
+            document.getElementById("quiz-q-field").textContent = q.field;
+            document.getElementById("quiz-q-author").textContent = q.author;
+            document.getElementById("quiz-q-img").src = q.termImage;
+
+            const feedbackEl = document.getElementById("quiz-feedback");
+            feedbackEl.classList.add("hidden");
+
+            // 오답 보기 3개 추출 (전체 전문어 풀에서 현재 정답 제외)
+            const distractors = shuffleArray(allJargons.filter(item => item.id !== q.id)).slice(0, 3);
+            const options = shuffleArray([q, ...distractors]);
+
+            const optionsContainer = document.getElementById("quiz-options");
+            optionsContainer.innerHTML = options.map((opt, idx) => `
+                <button type="button" id="opt-btn-${opt.id}" onclick="checkAnswer('${opt.id}')" 
+                        class="quiz-opt-btn pixel-box-sm p-3 bg-white hover:bg-blue-50 text-left flex flex-col gap-2 transition-colors">
+                    <span class="inline-block bg-slate-800 text-white px-2 py-0.5 text-xs font-bold w-fit">보기 ${idx + 1}</span>
+                    <div class="pixel-img-frame h-36 w-full bg-white p-1">
+                        <img src="${opt.meaningImage}" alt="보기 ${idx + 1}" class="max-h-full max-w-full object-contain">
+                    </div>
+                </button>
+            `).join("");
+
+            // 15초 타이머 시작
+            timeLeft = 15.0;
+            updateTimerUI();
+            questionTimer = setInterval(() => {
+                timeLeft = Math.max(0, timeLeft - 0.1);
+                updateTimerUI();
+                if (timeLeft <= 0) {
+                    clearInterval(questionTimer);
+                    handleTimeOut();
+                }
+            }, 100);
+        }
+
+        function updateTimerUI() {
+            const badge = document.getElementById("quiz-timer-badge");
+            const bar = document.getElementById("quiz-timer-bar");
+            const sec = Math.ceil(timeLeft);
+            const pct = (timeLeft / 15.0) * 100;
+
+            badge.textContent = `⏱️ ${sec}초`;
+            bar.style.width = `${pct}%`;
+
+            if (timeLeft <= 5.0) {
+                badge.classList.remove("bg-amber-200");
+                badge.classList.add("bg-red-500", "text-white", "animate-pulse");
+                bar.classList.remove("bg-emerald-500");
+                bar.classList.add("bg-red-500");
+            } else {
+                badge.classList.add("bg-amber-200");
+                badge.classList.remove("bg-red-500", "text-white", "animate-pulse");
+                bar.classList.add("bg-emerald-500");
+                bar.classList.remove("bg-red-500");
+            }
+        }
+
+        function handleTimeOut() {
+            if (isQuestionAnswered) return;
+            isQuestionAnswered = true;
+            const correctId = quizQuestions[currentQuestionIdx].id;
+
+            document.querySelectorAll(".quiz-opt-btn").forEach(btn => btn.disabled = true);
+            const correctBtn = document.getElementById(`opt-btn-${correctId}`);
+            if (correctBtn) {
+                correctBtn.classList.remove("bg-white");
+                correctBtn.classList.add("bg-emerald-200", "ring-4", "ring-emerald-600");
+            }
+
+            const feedbackEl = document.getElementById("quiz-feedback");
+            const msgEl = document.getElementById("quiz-feedback-msg");
+            msgEl.innerHTML = `<span class="text-red-600">⏰ 시간 초과! 초록색 테두리가 정답입니다.</span>`;
+            feedbackEl.classList.remove("hidden");
+            updateNextButtonText();
+        }
+
+        window.checkAnswer = function(selectedId) {
+            if (isQuestionAnswered) return;
+            isQuestionAnswered = true;
+            clearInterval(questionTimer);
+
+            const correctId = quizQuestions[currentQuestionIdx].id;
+            const isCorrect = selectedId === correctId;
+
+            document.querySelectorAll(".quiz-opt-btn").forEach(btn => btn.disabled = true);
+
+            const correctBtn = document.getElementById(`opt-btn-${correctId}`);
+            if (correctBtn) {
+                correctBtn.classList.remove("bg-white");
+                correctBtn.classList.add("bg-emerald-200", "ring-4", "ring-emerald-600");
+            }
+
+            const feedbackEl = document.getElementById("quiz-feedback");
+            const msgEl = document.getElementById("quiz-feedback-msg");
+
+            if (isCorrect) {
+                quizScore++;
+                document.getElementById("quiz-score-tag").textContent = `현재 점수: ${quizScore}점`;
+                msgEl.innerHTML = `<span class="text-emerald-700">⭕ 정답입니다! 훌륭해요!</span>`;
+            } else {
+                const wrongBtn = document.getElementById(`opt-btn-${selectedId}`);
+                if (wrongBtn) {
+                    wrongBtn.classList.remove("bg-white");
+                    wrongBtn.classList.add("bg-red-200", "ring-4", "ring-red-600");
+                }
+                msgEl.innerHTML = `<span class="text-red-600">❌ 아쉽네요! 초록색 테두리가 정답입니다.</span>`;
+            }
+
+            feedbackEl.classList.remove("hidden");
+            updateNextButtonText();
+        };
+
+        function updateNextButtonText() {
+            const nextBtn = document.getElementById("btn-next-q");
+            if (currentQuestionIdx + 1 >= quizQuestions.length) {
+                nextBtn.textContent = "🏆 결과 확인하기!";
+            } else {
+                nextBtn.textContent = "다음 문제로 ➡️";
+            }
+        }
+
+        window.nextQuestion = function() {
+            currentQuestionIdx++;
+            if (currentQuestionIdx < quizQuestions.length) {
+                renderQuestion();
+            } else {
+                finishQuiz();
+            }
+        };
+
+        window.quitQuiz = function() {
+            clearInterval(questionTimer);
+            resetQuizSetup();
+        };
+
+        window.resetQuizSetup = function() {
+            clearInterval(questionTimer);
+            document.getElementById("quiz-play").classList.add("hidden");
+            document.getElementById("quiz-result").classList.add("hidden");
+            document.getElementById("quiz-setup").classList.remove("hidden");
+            updateAvailableQuizInfo();
+        };
+
+        async function finishQuiz() {
+            clearInterval(questionTimer);
+            document.getElementById("quiz-play").classList.add("hidden");
+            document.getElementById("quiz-result").classList.remove("hidden");
+
+            const total = quizQuestions.length;
+            const accuracy = total > 0 ? Math.round((quizScore / total) * 100) : 0;
+
+            document.getElementById("res-nickname").textContent = quizPlayerName;
+            document.getElementById("res-score").textContent = `${quizScore} / ${total} 정답!`;
+            document.getElementById("res-accuracy").textContent = `정답률: ${accuracy}%`;
+
+            if (db && currentUser) {
+                try {
+                    const scoresRef = collection(db, 'artifacts', appId, 'public', 'data', 'scores');
+                    await addDoc(scoresRef, {
+                        nickname: quizPlayerName,
+                        score: quizScore,
+                        total: total,
+                        accuracy: accuracy,
+                        mode: String(selectedQuizCount),
+                        createdAt: Date.now()
+                    });
+                } catch (err) {
+                    console.error("점수 저장 오류:", err);
+                    showToast("점수 저장 중 오류가 발생했습니다.", "⚠️");
+                }
+            }
+        }
+
+        // ==========================================
+        // 7. 명예의 전당 (문항 수별 1등 및 순위표)
+        // ==========================================
+        window.selectRankFilter = function(mode) {
+            currentRankFilter = mode;
+            ["10", "20", "ALL"].forEach(key => {
+                const btn = document.getElementById(`rank-tab-${key}`);
+                if (key === mode) {
+                    btn.classList.remove("btn-white");
+                    btn.classList.add("btn-yellow");
+                } else {
+                    btn.classList.remove("btn-yellow");
+                    btn.classList.add("btn-white");
+                }
+            });
+            renderRank();
+        };
+
+        function getSortedScoresByMode(mode) {
+            return allScores
+                .filter(s => String(s.mode) === String(mode))
+                .sort((a, b) => {
+                    if (b.score !== a.score) return b.score - a.score;
+                    if ((b.accuracy || 0) !== (a.accuracy || 0)) return (b.accuracy || 0) - (a.accuracy || 0);
+                    return (a.createdAt || 0) - (b.createdAt || 0);
+                });
+        }
+
+        function renderRank() {
+            const modes = [
+                { key: "10", label: "10문제 챌린지" },
+                { key: "20", label: "20문제 챌린지" },
+                { key: "ALL", label: "모든 문항 마스터" }
+            ];
+
+            // 상단 1등 챔피언 요약 카드 3개 렌더링
+            const champContainer = document.getElementById("rank-champions");
+            champContainer.innerHTML = modes.map(m => {
+                const list = getSortedScoresByMode(m.key);
+                const top = list[0];
+                return `
+                    <div onclick="selectRankFilter('${m.key}')" class="pixel-box-sm p-4 bg-white cursor-pointer hover:bg-amber-50 text-center space-y-1">
+                        <div class="text-xs font-bold text-purple-700">👑 ${m.label} 1등</div>
+                        ${top ? `
+                            <div class="text-lg font-bold text-slate-900 truncate">${escapeHtml(top.nickname)}</div>
+                            <div class="text-sm font-bold text-emerald-600">${top.score} / ${top.total} (${top.accuracy}%)</div>
+                        ` : `
+                            <div class="text-sm text-slate-400 py-2">아직 도전자 없음</div>
+                        `}
+                    </div>
+                `;
+            }).join("");
+
+            // 하단 선택된 모드의 상세 순위 테이블 렌더링
+            const tbody = document.getElementById("rank-tbody");
+            const empty = document.getElementById("rank-empty");
+            const modeScores = getSortedScoresByMode(currentRankFilter);
+
+            if (modeScores.length === 0) {
+                tbody.innerHTML = "";
+                empty.classList.remove("hidden");
+                return;
+            }
+
+            empty.classList.add("hidden");
+            tbody.innerHTML = modeScores.map((s, idx) => {
+                const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `${idx + 1}위`;
+                const rowBg = idx === 0 ? "bg-amber-100 font-bold" : idx === 1 ? "bg-slate-100" : idx === 2 ? "bg-orange-50" : "bg-white";
+                return `
+                    <tr class="${rowBg}">
+                        <td class="p-3 sm:p-4 text-center text-base sm:text-lg">${medal}</td>
+                        <td class="p-3 sm:p-4">${escapeHtml(s.nickname)}</td>
+                        <td class="p-3 sm:p-4 text-center font-bold text-blue-700">${s.score} / ${s.total}</td>
+                        <td class="p-3 sm:p-4 text-center hidden sm:table-cell text-slate-600">${s.accuracy}%</td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function escapeHtml(str) {
+            return String(str || "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // 앱 시작
+        initFirebase();
+    </script>
 </body>
 </html>
