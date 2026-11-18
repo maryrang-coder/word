@@ -526,7 +526,7 @@
 
     <!-- Firebase SDK 및 애플리케이션 로직 -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
@@ -544,14 +544,19 @@
             appId: "여기에_APP_ID_입력"
         };
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'jargon-quest-class';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config) 
-            : (manualFirebaseConfig.apiKey !== "여기에_API_KEY_입력" ? manualFirebaseConfig : null);
+        const appId = typeof __app_id !== 'undefined' && __app_id ? __app_id : 'jargon-quest-class';
+        const parsedEnvConfig = typeof __firebase_config !== 'undefined' && __firebase_config
+            ? (typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config)
+            : null;
+        const firebaseConfig = parsedEnvConfig
+            ? parsedEnvConfig
+            : (manualFirebaseConfig.apiKey && manualFirebaseConfig.apiKey !== "여기에_API_KEY_입력" ? manualFirebaseConfig : null);
 
         let db = null;
         let auth = null;
         let currentUser = null;
+        let unsubscribeJargons = null;
+        let unsubscribeScores = null;
 
         let allJargons = [];
         let filteredJargons = [];
@@ -616,21 +621,32 @@
             }
 
             try {
-                const app = initializeApp(firebaseConfig);
+                const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
 
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                onAuthStateChanged(auth, (user) => {
+                // Firestore 보안 규칙(request.auth != null)을 충족하기 위해 인증 상태 감시 및 익명 로그인 처리
+                onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         currentUser = user;
                         banner.classList.add("hidden");
                         subscribeData();
+                    } else {
+                        try {
+                            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                                await signInWithCustomToken(auth, __initial_auth_token);
+                            } else {
+                                await signInAnonymously(auth);
+                            }
+                        } catch (authErr) {
+                            console.error("Firebase 인증 오류:", authErr);
+                            const guide = (authErr.code === "auth/operation-not-allowed" || authErr.code === "auth/admin-restricted-operation")
+                                ? " (Firebase 콘솔 > Authentication > Sign-in method에서 '익명' 로그인을 활성화해주세요!)"
+                                : "";
+                            banner.innerHTML = `<span class="text-xl">❌</span><span>인증 연결 오류: ${authErr.message}${guide}</span>`;
+                            banner.classList.replace("bg-yellow-100", "bg-red-100");
+                            banner.classList.remove("hidden");
+                        }
                     }
                 });
             } catch (err) {
@@ -643,9 +659,12 @@
         function subscribeData() {
             if (!db || !currentUser) return;
 
-            // 1) 전문어 데이터 실시간 구독
+            if (unsubscribeJargons) unsubscribeJargons();
+            if (unsubscribeScores) unsubscribeScores();
+
+            // 1) 전문어 데이터 실시간 구독 (/artifacts/{appId}/public/data/jargons)
             const jargonsRef = collection(db, 'artifacts', appId, 'public', 'data', 'jargons');
-            onSnapshot(jargonsRef, (snapshot) => {
+            unsubscribeJargons = onSnapshot(jargonsRef, (snapshot) => {
                 const items = [];
                 snapshot.forEach(doc => {
                     items.push({ id: doc.id, ...doc.data() });
@@ -657,11 +676,14 @@
                 updateAvailableQuizInfo();
             }, (err) => {
                 console.error("전문어 데이터 불러오기 오류:", err);
+                if (err.code === "permission-denied") {
+                    showToast("Firestore 권한 오류입니다. 보안 규칙과 익명 로그인을 확인해주세요!", "⚠️");
+                }
             });
 
-            // 2) 명예의 전당 점수 데이터 실시간 구독
+            // 2) 명예의 전당 점수 데이터 실시간 구독 (/artifacts/{appId}/public/data/scores)
             const scoresRef = collection(db, 'artifacts', appId, 'public', 'data', 'scores');
-            onSnapshot(scoresRef, (snapshot) => {
+            unsubscribeScores = onSnapshot(scoresRef, (snapshot) => {
                 const scores = [];
                 snapshot.forEach(doc => {
                     scores.push({ id: doc.id, ...doc.data() });
