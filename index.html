@@ -6,7 +6,7 @@
     <title>전문어 퀘스트 - 중1 국어 수업</title>
     <!-- Tailwind CSS 로드 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 레트로 픽셀 한글 폰트 (DungGeunMo) 및 영문 픽셀 폰트 로드 -->
+    <!-- 레트로 픽셀 한글 폰트 (DungGeunMo) 로드 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/DungGeunMo.css">
     <style>
         /* 픽셀 게임 스타일 커스텀 CSS */
@@ -526,34 +526,35 @@
 
     <!-- Firebase SDK 및 애플리케이션 로직 -->
     <script type="module">
-        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // 사용자가 제공한 Firebase SDK v13.4.0 기준으로 App, Analytics, Auth, Firestore 로드
+        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-analytics.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
 
         // ==========================================
         // 1. Firebase 초기화 및 전역 상태
         // ==========================================
-        // [선생님 안내] 직접 만드신 Firebase 프로젝트의 설정값을 아래에 붙여넣으세요!
-        // (현재 환경에서 자동 제공되는 설정이 있으면 우선 사용합니다)
+        // 제공해주신 Firebase 프로젝트(word-2e991) 설정값 적용
         const manualFirebaseConfig = {
-            apiKey: "여기에_API_KEY_입력",
-            authDomain: "여기에_AUTH_DOMAIN_입력",
-            projectId: "여기에_PROJECT_ID_입력",
-            storageBucket: "여기에_STORAGE_BUCKET_입력",
-            messagingSenderId: "여기에_MESSAGING_SENDER_ID_입력",
-            appId: "여기에_APP_ID_입력"
+            apiKey: "AIzaSyDZ90LGiYck4SD4EohkhetXlT2YX3ICHW4",
+            authDomain: "word-2e991.firebaseapp.com",
+            projectId: "word-2e991",
+            storageBucket: "word-2e991.firebasestorage.app",
+            messagingSenderId: "143589157327",
+            appId: "1:143589157327:web:64c08f9e16a5e180fb4aba",
+            measurementId: "G-YV2EQ9FZ7F"
         };
 
         const appId = typeof __app_id !== 'undefined' && __app_id ? __app_id : 'jargon-quest-class';
         const parsedEnvConfig = typeof __firebase_config !== 'undefined' && __firebase_config
             ? (typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config)
             : null;
-        const firebaseConfig = parsedEnvConfig
-            ? parsedEnvConfig
-            : (manualFirebaseConfig.apiKey && manualFirebaseConfig.apiKey !== "여기에_API_KEY_입력" ? manualFirebaseConfig : null);
+        const firebaseConfig = parsedEnvConfig ? parsedEnvConfig : manualFirebaseConfig;
 
         let db = null;
         let auth = null;
+        let analytics = null;
         let currentUser = null;
         let unsubscribeJargons = null;
         let unsubscribeScores = null;
@@ -592,7 +593,7 @@
             clearTimeout(box._timeout);
             box._timeout = setTimeout(() => {
                 box.classList.add("hidden");
-            }, 3000);
+            }, 3500);
         }
 
         window.switchTab = function(tabName) {
@@ -614,16 +615,20 @@
         // ==========================================
         async function initFirebase() {
             const banner = document.getElementById("loading-banner");
-            if (!firebaseConfig) {
-                banner.innerHTML = `<span class="text-xl">⚠️</span><span>Firebase 설정이 연결되지 않았습니다. 코드 상단의 <b>manualFirebaseConfig</b>에 설정값을 입력해주세요!</span>`;
-                banner.classList.replace("bg-yellow-100", "bg-red-100");
-                return;
-            }
 
             try {
                 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
+
+                // Analytics는 로컬 파일(file://)이나 광고 차단 환경에서 예외가 발생할 수 있으므로 안전하게 초기화
+                try {
+                    if (firebaseConfig.measurementId && window.location.protocol.startsWith("http")) {
+                        analytics = getAnalytics(app);
+                    }
+                } catch (analyticsErr) {
+                    console.warn("Analytics 초기화 건너뜀:", analyticsErr);
+                }
 
                 // Firestore 보안 규칙(request.auth != null)을 충족하기 위해 인증 상태 감시 및 익명 로그인 처리
                 onAuthStateChanged(auth, async (user) => {
@@ -641,7 +646,7 @@
                         } catch (authErr) {
                             console.error("Firebase 인증 오류:", authErr);
                             const guide = (authErr.code === "auth/operation-not-allowed" || authErr.code === "auth/admin-restricted-operation")
-                                ? " (Firebase 콘솔 > Authentication > Sign-in method에서 '익명' 로그인을 활성화해주세요!)"
+                                ? " → Firebase 콘솔 [Authentication > Sign-in method]에서 '익명' 로그인을 사용 설정해주세요!"
                                 : "";
                             banner.innerHTML = `<span class="text-xl">❌</span><span>인증 연결 오류: ${authErr.message}${guide}</span>`;
                             banner.classList.replace("bg-yellow-100", "bg-red-100");
@@ -676,8 +681,11 @@
                 updateAvailableQuizInfo();
             }, (err) => {
                 console.error("전문어 데이터 불러오기 오류:", err);
+                const banner = document.getElementById("loading-banner");
                 if (err.code === "permission-denied") {
-                    showToast("Firestore 권한 오류입니다. 보안 규칙과 익명 로그인을 확인해주세요!", "⚠️");
+                    banner.innerHTML = `<span class="text-xl">⚠️</span><span>Firestore 권한 오류입니다. Firebase 콘솔 [Firestore Database > 규칙] 설정을 확인해주세요!</span>`;
+                    banner.classList.replace("bg-yellow-100", "bg-red-100");
+                    banner.classList.remove("hidden");
                 }
             });
 
